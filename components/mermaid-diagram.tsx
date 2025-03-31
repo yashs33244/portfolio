@@ -17,9 +17,8 @@ declare global {
 export function MermaidDiagram({ chart }: MermaidDiagramProps) {
   const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    // Initialize mermaid immediately if it's already loaded
-    if (window.mermaid && ref.current) {
+  const renderDiagram = () => {
+    if (ref.current) {
       try {
         // Clear previous content
         ref.current.innerHTML = "";
@@ -51,51 +50,33 @@ export function MermaidDiagram({ chart }: MermaidDiagramProps) {
         }
       }
     }
-  }, [chart]);
+  };
 
-  // Once on mount, add a global mermaid load handler for future loads
   useEffect(() => {
     // Define global handler for mermaid script load
     window.onMermaidLoad = () => {
-      // Find any unprocessed diagrams and initialize them
-      const diagrams = document.querySelectorAll(
-        '.mermaid:not([data-processed="true"])'
-      );
-      if (diagrams.length > 0 && window.mermaid) {
-        window.mermaid.initialize({
-          startOnLoad: false,
-          theme: "default",
-          securityLevel: "loose",
-        });
-        window.mermaid.run();
-      }
+      renderDiagram();
     };
 
+    // Try to render immediately if mermaid is already loaded
+    if (window.mermaid) {
+      renderDiagram();
+    }
+
     return () => {
-      // Clean up on unmount
       window.onMermaidLoad = undefined;
     };
-  }, []);
+  }, [chart]);
 
   return (
     <>
-      {/* Load mermaid script with beforeInteractive strategy for faster loading */}
       <Script
         id="mermaid-script"
         src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"
         strategy="beforeInteractive"
         onLoad={() => {
-          if (typeof window.onMermaidLoad === "function") {
-            window.onMermaidLoad();
-          }
+          renderDiagram();
         }}
-      />
-
-      {/* Add a preload link for the mermaid script for even faster loading */}
-      <link
-        rel="preload"
-        href="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"
-        as="script"
       />
 
       <div
