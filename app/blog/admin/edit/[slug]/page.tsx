@@ -15,7 +15,7 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { BlogPost } from "@/types/blog";
 import { useAuth } from "@/hooks/use-auth";
 
-export default function EditPostPage({ params }: { params: { slug: string } }) {
+export default function EditPostPage({ params }: any) {
   const slug = params.slug;
   const router = useRouter();
   const { isAuthenticated } = useAuth();

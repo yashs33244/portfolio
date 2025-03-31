@@ -2,13 +2,12 @@ version: '3.8'
 
 services:
   web:
-    image: yashs3324/portfolio:latest
     build: 
       context: .
       dockerfile: Dockerfile
     restart: always
     ports:
-      - "3004:3004"
+      - "3000:3000"
     environment:
       - DATABASE_URL=postgresql://postgres:mysecretpassword@db:5432/demo_website?schema=public
       - NODE_ENV=production
@@ -25,7 +24,7 @@ services:
       - POSTGRES_PASSWORD=mysecretpassword
       - POSTGRES_DB=demo_website
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:

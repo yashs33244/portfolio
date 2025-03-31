@@ -3,25 +3,15 @@
 import { useEffect, useRef } from "react";
 import Script from "next/script";
 
-// Add type definition for window.mermaid
-declare global {
-  interface Window {
-    mermaid: {
-      initialize: (config: {
-        startOnLoad?: boolean;
-        theme?: string;
-        securityLevel?: string;
-        fontFamily?: string;
-        [key: string]: any;
-      }) => void;
-      contentLoaded: () => void;
-      render: (id: string, text: string) => Promise<{ svg: string }>;
-    };
-  }
-}
-
 interface MermaidDiagramProps {
   chart: string;
+}
+
+declare global {
+  interface Window {
+    mermaid: typeof mermaid;
+    onMermaidLoad?: () => void;
+  }
 }
 
 export function MermaidDiagram({ chart }: MermaidDiagramProps) {
@@ -42,7 +32,7 @@ export function MermaidDiagram({ chart }: MermaidDiagramProps) {
 
         // Initialize mermaid with optimal settings
         window.mermaid.initialize({
-          startOnLoad: false, // We'll handle initialization ourselves
+          startOnLoad: false,
           theme: "default",
           securityLevel: "loose",
         });
@@ -83,7 +73,7 @@ export function MermaidDiagram({ chart }: MermaidDiagramProps) {
 
     return () => {
       // Clean up on unmount
-      delete window.onMermaidLoad;
+      window.onMermaidLoad = undefined;
     };
   }, []);
 

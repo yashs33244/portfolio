@@ -5,9 +5,7 @@ import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
 
 interface CategoryPageProps {
-  params: {
-    slug: string;
-  };
+  params: any;
   searchParams: Promise<{
     page?: string;
   }>;

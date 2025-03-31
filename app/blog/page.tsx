@@ -9,14 +9,7 @@ export const metadata: Metadata = {
     "Read the latest articles on software development, tech, and more.",
 };
 
-interface BlogPageProps {
-  searchParams: {
-    page?: string;
-    category?: string;
-  };
-}
-
-export default async function BlogPage({ searchParams }: BlogPageProps) {
+export default async function BlogPage({ searchParams }: any) {
   // In server components, searchParams needs to be awaited according to
   // the error message we received
   const params = await Promise.resolve(searchParams);

@@ -1,61 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { checkBlogAdminAuth } from '../middleware';
+import { getPostBySlug } from "@/lib/blog";
 
 // GET /api/blog/:slug
 export async function GET(
-  req: NextRequest,
-  { params }: { params: { slug: string } }
+  request: NextRequest,
+  { params }: any
 ) {
-  const resolvedParams = await Promise.resolve(params);
-  const slug = resolvedParams.slug;
-
   try {
-    // Find the post
-    const post = await prisma.post.findUnique({
-      where: { slug },
-      include: {
-        categories: true,
-      },
-    });
-
+    const post = await getPostBySlug(params.slug);
     if (!post) {
-      return NextResponse.json({ error: 'Blog post not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: "Post not found" },
+        { status: 404 }
+      );
     }
-
-    // Increment view count
-    await prisma.post.update({
-      where: { id: post.id },
-      data: { views: { increment: 1 } },
-    });
-
     return NextResponse.json(post);
   } catch (error) {
-    console.error(`Error fetching blog post with slug ${slug}:`, error);
-    return NextResponse.json({ error: 'Failed to fetch blog post' }, { status: 500 });
+    console.error("Error fetching post:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
 // PUT /api/blog/:slug
 export async function PUT(
-  req: NextRequest,
-  { params }: { params: { slug: string } }
+  request: NextRequest,
+  { params }: any
 ) {
   // Check authentication
-  const authResponse = checkBlogAdminAuth(req);
+  const authResponse = checkBlogAdminAuth(request);
   if (authResponse.status !== 200) {
     return authResponse;
   }
 
-  const resolvedParams = await Promise.resolve(params);
-  const slug = resolvedParams.slug;
-
   try {
-    const body = await req.json();
+    const body = await request.json();
     
     // Find existing post
     const existingPost = await prisma.post.findUnique({
-      where: { slug },
+      where: { slug: params.slug },
       include: { categories: true },
     });
 
@@ -116,7 +103,7 @@ export async function PUT(
         published: body.published,
         featured: body.featured,
         // Only update slug if provided
-        ...(body.slug && body.slug !== slug ? { slug: body.slug } : {}),
+        ...(body.slug && body.slug !== params.slug ? { slug: body.slug } : {}),
         author: body.author,
         readingTime: body.readingTime,
         // Handle categories if provided
@@ -129,29 +116,26 @@ export async function PUT(
 
     return NextResponse.json(updatedPost);
   } catch (error) {
-    console.error(`Error updating blog post with slug ${slug}:`, error);
+    console.error(`Error updating blog post with slug ${params.slug}:`, error);
     return NextResponse.json({ error: 'Failed to update blog post' }, { status: 500 });
   }
 }
 
 // DELETE /api/blog/:slug
 export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { slug: string } }
+  request: NextRequest,
+  { params }: any
 ) {
   // Check authentication
-  const authResponse = checkBlogAdminAuth(req);
+  const authResponse = checkBlogAdminAuth(request);
   if (authResponse.status !== 200) {
     return authResponse;
   }
 
-  const resolvedParams = await Promise.resolve(params);
-  const slug = resolvedParams.slug;
-
   try {
     // Find existing post
     const existingPost = await prisma.post.findUnique({
-      where: { slug },
+      where: { slug: params.slug },
     });
 
     if (!existingPost) {
@@ -165,7 +149,7 @@ export async function DELETE(
 
     return NextResponse.json({ message: 'Blog post deleted successfully' });
   } catch (error) {
-    console.error(`Error deleting blog post with slug ${slug}:`, error);
+    console.error(`Error deleting blog post with slug ${params.slug}:`, error);
     return NextResponse.json({ error: 'Failed to delete blog post' }, { status: 500 });
   }
 } 

@@ -7,7 +7,7 @@ interface MermaidWrapperProps {
   chart: string;
 }
 
-export default function MermaidWrapper({ chart }: MermaidWrapperProps) {
+export default function MermaidWrapper({ chart }: any) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mermaidLoaded = useRef(false);
 
@@ -72,19 +72,4 @@ export default function MermaidWrapper({ chart }: MermaidWrapperProps) {
       />
     </>
   );
-}
-
-// Add typescript definition for window.mermaid
-declare global {
-  interface Window {
-    mermaid: {
-      initialize: (config: {
-        startOnLoad?: boolean;
-        theme?: string;
-        securityLevel?: string;
-        [key: string]: any;
-      }) => void;
-      run: () => void;
-    };
-  }
 }

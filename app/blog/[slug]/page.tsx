@@ -16,9 +16,7 @@ import { formatDate } from "@/lib/utils";
 import Script from "next/script";
 
 interface BlogPostPageProps {
-  params: {
-    slug: string;
-  };
+  params: any;
 }
 
 // Generate metadata for the blog post

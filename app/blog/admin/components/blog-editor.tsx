@@ -92,12 +92,12 @@ export function BlogEditor({ post, categories = [] }: BlogEditorProps) {
           post: {
             ...values,
             id: post.id,
-          },
+          } as any,
         });
         toast.success("Blog post updated successfully");
       } else {
         // Create new post
-        const newPost = await createPostMutation.mutateAsync(values);
+        const newPost = await createPostMutation.mutateAsync(values as any);
         toast.success("Blog post created successfully");
 
         // Redirect to edit page for the new post

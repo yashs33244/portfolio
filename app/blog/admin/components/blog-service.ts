@@ -61,7 +61,7 @@ export async function updateBlogPost(slug: string, data: {
   categories?: string[];
 }): Promise<BlogPost> {
   // Calculate reading time if content is included
-  const postData = { ...data };
+  const postData = { ...data } as any;
   if (data.content) {
     postData.readingTime = calculateReadingTime(data.content);
   }
