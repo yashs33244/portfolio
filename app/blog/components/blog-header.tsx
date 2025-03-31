@@ -1,9 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar, Clock } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, ImageOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Category } from "@prisma/client";
+import { useState } from "react";
 
 interface BlogHeaderProps {
   title: string;
@@ -24,6 +25,20 @@ export function BlogHeader({
   categories = [],
   readingTime = 5,
 }: BlogHeaderProps) {
+  const [imgError, setImgError] = useState(false);
+
+  // Validate image URL
+  const isValidImageUrl = (url: string | null | undefined): boolean => {
+    if (!url) return false;
+    return (
+      url.startsWith("/") ||
+      url.startsWith("http://") ||
+      url.startsWith("https://")
+    );
+  };
+
+  const validCoverImage = isValidImageUrl(coverImage) ? coverImage : null;
+
   return (
     <div className="mb-10">
       <Button
@@ -72,19 +87,35 @@ export function BlogHeader({
         </div>
       </div>
 
-      {coverImage && (
+      {validCoverImage && !imgError ? (
         <figure className="mb-10 overflow-hidden rounded-lg border">
           <div className="relative aspect-video">
             <Image
-              src={coverImage}
+              src={validCoverImage}
               alt={title}
               fill
               className="object-cover"
               priority
               sizes="(min-width: 1024px) 1000px, 100vw"
+              onError={() => setImgError(true)}
             />
           </div>
         </figure>
+      ) : (
+        coverImage && (
+          <figure className="mb-10 overflow-hidden rounded-lg border bg-gray-100 flex items-center justify-center">
+            <div className="relative aspect-video w-full flex flex-col items-center justify-center text-gray-400">
+              <ImageOff className="h-16 w-16 mb-2" />
+              <p>
+                Invalid image source:{" "}
+                {typeof coverImage === "string" ? coverImage : "No image"}
+              </p>
+              <p className="text-sm text-gray-500">
+                Image must start with '/' or be an absolute URL
+              </p>
+            </div>
+          </figure>
+        )
       )}
     </div>
   );

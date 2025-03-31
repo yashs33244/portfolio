@@ -1,23 +1,50 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { BlogCardProps } from "@/types/blog";
-import { Calendar, Clock } from "lucide-react";
+import { Calendar, Clock, ImageOff } from "lucide-react";
+import { useState } from "react";
 
 export function BlogCard({ post }: BlogCardProps) {
+  const [imgError, setImgError] = useState(false);
+
+  // Validate image URL
+  const isValidImageUrl = (url: string | null | undefined): boolean => {
+    if (!url) return false;
+    return (
+      url.startsWith("/") ||
+      url.startsWith("http://") ||
+      url.startsWith("https://")
+    );
+  };
+
+  const validCoverImage =
+    post.coverImage && isValidImageUrl(post.coverImage)
+      ? post.coverImage
+      : null;
+  const hasInvalidImage = post.coverImage && !validCoverImage;
+
   return (
     <article className="group rounded-lg border overflow-hidden transition-colors hover:border-primary">
       <Link href={`/blog/${post.slug}`} className="block h-full">
         <div className="relative aspect-video">
-          {post.coverImage ? (
+          {validCoverImage && !imgError ? (
             <Image
-              src={post.coverImage}
+              src={validCoverImage}
               alt={post.title}
               fill
               className="object-cover transition-transform group-hover:scale-105"
               sizes="(min-width: 1024px) 384px, (min-width: 768px) 288px, 100vw"
+              onError={() => setImgError(true)}
             />
+          ) : hasInvalidImage ? (
+            <div className="h-full bg-gray-100 flex flex-col items-center justify-center text-gray-400 p-4 text-center">
+              <ImageOff className="h-8 w-8 mb-1" />
+              <span className="text-xs">Invalid image format</span>
+            </div>
           ) : (
             <div className="h-full bg-muted flex items-center justify-center text-muted-foreground p-4 text-center">
               No cover image

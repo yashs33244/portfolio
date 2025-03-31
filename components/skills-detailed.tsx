@@ -1,111 +1,86 @@
 import { Badge } from "@/components/ui/badge";
 
-const skillCategories = [
+const skills = [
   {
-    name: "Programming Languages",
+    category: "Programming Languages",
     color: "amber",
-    skills: [
-      "Python",
-      "JavaScript",
-      "TypeScript",
-      "C++",
-      "C",
-      "HTML/CSS",
-      "SQL",
+    items: [
+      { name: "Python", level: 90 },
+      { name: "JavaScript", level: 85 },
+      { name: "TypeScript", level: 85 },
+      { name: "C++", level: 80 },
+      { name: "C", level: 75 },
+      { name: "HTML/CSS", level: 90 },
     ],
   },
   {
-    name: "Frontend Technologies",
+    category: "Backend & Databases",
     color: "orange",
-    skills: [
-      "React.js",
-      "Next.js",
-      "Tailwind CSS",
-      "Redux",
-      "Recoil",
-      "WebRTC",
-      "Material UI",
-      "Bootstrap",
-      "shadcn/ui",
+    items: [
+      { name: "Node.js", level: 85 },
+      { name: "Express.js", level: 80 },
+      { name: "PostgreSQL", level: 85 },
+      { name: "MongoDB", level: 80 },
+      { name: "Redis", level: 75 },
+      { name: "Prisma ORM", level: 85 },
+      { name: "REST APIs", level: 90 },
+      { name: "GraphQL", level: 75 },
     ],
   },
   {
-    name: "Backend & Databases",
+    category: "Frontend & Web",
     color: "rose",
-    skills: [
-      "Node.js",
-      "Express.js",
-      "Prisma ORM",
-      "PostgreSQL",
-      "MongoDB",
-      "MySQL",
-      "Firebase",
-      "Redis",
-      "REST APIs",
-      "GraphQL",
-      "WebSockets",
-      "next-auth",
-      "JWT",
-      "Redis",
-      "AWS S3",
-      "AWS ECR",
-      "AWS EKS",
+    items: [
+      { name: "React.js", level: 90 },
+      { name: "Next.js", level: 85 },
+      { name: "Tailwind CSS", level: 85 },
+      { name: "WebRTC", level: 75 },
+      { name: "Web3.js", level: 70 },
+      { name: "Recoil", level: 80 },
+      { name: "Material UI", level: 80 },
+      { name: "shadcn/ui", level: 85 },
     ],
   },
   {
-    name: "DevOps & Cloud",
+    category: "DevOps & Cloud",
     color: "blueviolet",
-    skills: [
-      "Docker",
-      "Kubernetes",
-      "Docker Swarm",
-      "AWS",
-      "GCP",
-      "CI/CD",
-      "GitLab CI/CD",
-      "Git/GitHub",
-      "Helm Charts",
-      "Linux/Unix",
-      "Bash",
-      "Route53",
-      "Cloudflare",
-      "Microservices",
+    items: [
+      { name: "Docker", level: 85 },
+      { name: "Kubernetes", level: 80 },
+      { name: "AWS", level: 80 },
+      { name: "GCP", level: 75 },
+      { name: "CI/CD", level: 85 },
+      { name: "Helm Charts", level: 75 },
+      { name: "Git/GitHub", level: 90 },
+      { name: "GitLab", level: 80 },
     ],
   },
   {
-    name: "Data Science & ML",
+    category: "Machine Learning",
     color: "azure",
-    skills: [
-      "NumPy",
-      "Pandas",
-      "Matplotlib",
-      "Scikit-learn",
-      "Seaborn",
-      "LLMs",
-      "NLP",
-      "GNN",
-      "Keras",
-      "Deep Learning",
-      "SMOTE",
-      "Gemini API",
+    items: [
+      { name: "NumPy", level: 85 },
+      { name: "Pandas", level: 85 },
+      { name: "Scikit-learn", level: 80 },
+      { name: "Matplotlib", level: 80 },
+      { name: "Seaborn", level: 75 },
+      { name: "LLMs", level: 75 },
+      { name: "NLP", level: 70 },
+      { name: "GNN", level: 70 },
     ],
   },
   {
-    name: "Architecture & Tools",
+    category: "Tools & Technologies",
     color: "amber",
-    skills: [
-      "Turborepo",
-      "OpenAPI Spec",
-      "Postman",
-      "Figma",
-      "DevOps",
-      "Agile Methodologies",
-      "Jira",
-      "Notion",
-      "Jupyter Notebook",
-      "VS Code",
-      "Algorithm Design",
-      "System Design",
+    items: [
+      { name: "VS Code", level: 90 },
+      { name: "Postman", level: 85 },
+      { name: "Figma", level: 75 },
+      { name: "Jira", level: 80 },
+      { name: "OpenAPI Spec", level: 80 },
+      { name: "Turborepo", level: 75 },
+      { name: "Firebase", level: 80 },
+      { name: "Cloudflare", level: 75 },
     ],
   },
 ];
@@ -120,15 +95,17 @@ export default function SkillsDetailed() {
           </h2>
           <p className="text-gray-600 max-w-3xl">
             A comprehensive overview of my technical skills across software
-            development, cloud infrastructure, and data science gained through
-            practical experience and academic projects.
+            development, cloud infrastructure, and machine learning. Proficient
+            in building scalable applications, implementing secure
+            authentication systems, and developing innovative solutions using
+            cutting-edge technologies.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {skillCategories.map((category) => (
+          {skills.map((category) => (
             <div
-              key={category.name}
+              key={category.category}
               className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-all duration-300"
             >
               <div className={`h-1.5 bg-${category.color}-500`}></div>
@@ -136,16 +113,16 @@ export default function SkillsDetailed() {
                 <h3
                   className={`text-xl font-semibold mb-4 text-${category.color}-600`}
                 >
-                  {category.name}
+                  {category.category}
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  {category.skills.map((skill) => (
+                  {category.items.map((item) => (
                     <Badge
-                      key={skill}
+                      key={item.name}
                       variant="outline"
                       className={`bg-white border border-${category.color}-200 text-gray-700 hover:bg-${category.color}-50 transition-colors py-1`}
                     >
-                      {skill}
+                      {item.name}
                     </Badge>
                   ))}
                 </div>
@@ -156,9 +133,10 @@ export default function SkillsDetailed() {
 
         <div className="mt-12 text-center">
           <p className="text-gray-600">
-            Solved 450+ problems on LeetCode, showcasing strong algorithm design
-            and problem-solving abilities. Continuously expanding expertise
-            through professional experience and self-directed learning.
+            Proven track record in developing secure and scalable applications,
+            with expertise in cloud infrastructure, microservices architecture,
+            and machine learning. Continuously expanding knowledge through
+            professional experience and competitive programming achievements.
           </p>
         </div>
       </div>
