@@ -6,7 +6,7 @@ import { getPostBySlug } from "@/lib/blog";
 // GET /api/blog/:slug
 export async function GET(
   request: NextRequest,
-  context: { params: { slug: string } }
+  context: any
 ) {
   try {
     // Await the params to resolve the promise
@@ -32,7 +32,7 @@ export async function GET(
 // PUT /api/blog/:slug
 export async function PUT(
   request: NextRequest,
-  context: { params: { slug: string } }
+  context: any
 ) {
   // Check authentication
   const authResponse = checkBlogAdminAuth(request);
@@ -324,7 +324,7 @@ export async function PUT(
 // DELETE /api/blog/:slug
 export async function DELETE(
   request: NextRequest,
-  context: { params: { slug: string } }
+  context: any
 ) {
   // Check authentication
   const authResponse = checkBlogAdminAuth(request);

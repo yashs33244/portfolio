@@ -4,7 +4,7 @@ import prisma from '@/lib/prisma';
 // POST /api/blog/:slug/view
 export async function POST(
   req: NextRequest,
-  context: { params: { slug: string } }
+  context: any
 ) {
   const slug = context.params.slug;
 
