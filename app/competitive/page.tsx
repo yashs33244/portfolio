@@ -5,16 +5,16 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import Navbar from "@/components/navbar";
+import Footer from "@/components/footer";
 import GithubStats from "@/components/github-stats";
 import LeetcodeStats from "@/components/leetcode-stats";
 import CodeforcesStats from "@/components/codeforces-stats";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 export default function Competitive() {
-  const queryClient = new QueryClient();
-
   return (
-    <QueryClientProvider client={queryClient}>
+    <>
+      <Navbar />
       <div className="container py-10">
         <div className="flex flex-col gap-2 mb-8">
           <h1 className="text-3xl font-bold">Competitive Programming</h1>
@@ -157,6 +157,7 @@ export default function Competitive() {
           </div>
         </div>
       </div>
-    </QueryClientProvider>
+      <Footer />
+    </>
   );
 }

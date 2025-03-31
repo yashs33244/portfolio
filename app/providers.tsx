@@ -1,8 +1,8 @@
 "use client";
 
 import { ReactNode } from "react";
-import { ThemeProvider } from "@/components/theme-provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ThemeProvider } from "next-themes";
 import { Toaster } from "sonner";
 
 // Create a client
@@ -11,15 +11,12 @@ const queryClient = new QueryClient({
     queries: {
       staleTime: 60 * 1000, // 1 minute
       refetchOnWindowFocus: false,
+      retry: 1,
     },
   },
 });
 
-interface ProvidersProps {
-  children: ReactNode;
-}
-
-export function Providers({ children }: ProvidersProps) {
+export function Providers({ children }: { children: ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider
@@ -29,8 +26,8 @@ export function Providers({ children }: ProvidersProps) {
         forcedTheme="light"
       >
         {children}
+        <Toaster richColors position="top-right" />
       </ThemeProvider>
-      <Toaster position="top-right" />
     </QueryClientProvider>
   );
 }

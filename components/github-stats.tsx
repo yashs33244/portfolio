@@ -14,17 +14,18 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { GitHubUser, GitHubRepo, GitHubStats } from "@/types/github";
+import { Octokit } from "@octokit/core";
 
 interface GithubStatsProps {
   detailed?: boolean;
 }
 
-// Mock GitHub user data
+// Mock GitHub user data for yashs33244
 const mockGithubUser: GitHubUser = {
   login: "yashs33244",
   id: 12345678,
   node_id: "MDQ6VXNlcjEyMzQ1Njc4",
-  avatar_url: "https://avatars.githubusercontent.com/u/12345678",
+  avatar_url: "https://avatars.githubusercontent.com/u/yashs33244",
   gravatar_id: "",
   url: "https://api.github.com/users/yashs33244",
   html_url: "https://github.com/yashs33244",
@@ -42,182 +43,259 @@ const mockGithubUser: GitHubUser = {
   type: "User",
   site_admin: false,
   name: "Yash Singh",
-  company: null,
+  company: "@EpicGames",
   blog: "",
   location: "India",
   email: null,
   hireable: null,
-  bio: "Fullstack Developer and Software Engineer",
-  twitter_username: null,
-  public_repos: 28,
-  public_gists: 5,
-  followers: 78,
-  following: 45,
-  created_at: "2018-07-15T12:34:56Z",
+  bio: "A Passionate Fullstack Developer and Data Science Enthusiast from India",
+  twitter_username: "yashs3324",
+  public_repos: 82,
+  public_gists: 17,
+  followers: 1,
+  following: 3,
+  created_at: "2023-01-15T12:34:56Z",
   updated_at: "2023-01-15T12:34:56Z",
 };
 
 // Mock language stats
 const mockLanguageStats = {
   topLanguages: [
-    { name: "JavaScript", percentage: 38, color: "#f1e05a" },
-    { name: "TypeScript", percentage: 25, color: "#2b7489" },
-    { name: "Python", percentage: 20, color: "#3572A5" },
-    { name: "C++", percentage: 10, color: "#f34b7d" },
-    { name: "HTML", percentage: 7, color: "#e34c26" },
+    { name: "TypeScript", percentage: 45, color: "#2b7489" },
+    { name: "JavaScript", percentage: 25, color: "#f1e05a" },
+    { name: "Python", percentage: 15, color: "#3572A5" },
+    { name: "HTML", percentage: 10, color: "#e34c26" },
+    { name: "Jupyter Notebook", percentage: 5, color: "#DA5B0B" },
   ],
-  totalStars: 112,
-  totalForks: 45,
+  totalStars: 6,
+  totalForks: 1,
 };
+
+// Create an Octokit instance
+const createOctokit = () => {
+  // For now, we're using an unauthenticated client due to token issues
+  // When you have a valid token, uncomment and use this code:
+  // const token = process.env.NEXT_PUBLIC_GITHUB_TOKEN;
+  // if (token) {
+  //   console.log("Using authenticated GitHub API");
+  //   return new Octokit({ auth: token });
+  // }
+
+  console.log("Using unauthenticated GitHub API - rate limits will be lower");
+  return new Octokit();
+};
+
+// The GitHub username to fetch data for
+const GITHUB_USERNAME = "yashs33244";
 
 async function fetchGitHubUser(): Promise<GitHubUser> {
   try {
-    const response = await fetch("https://api.github.com/user", {
-      headers: {
-        Accept: "application/vnd.github+json",
-        Authorization: `Bearer ${
-          process.env.NEXT_PUBLIC_GITHUB_TOKEN ||
-          "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"
-        }`,
-        "X-GitHub-Api-Version": "2022-11-28",
-      },
-    });
+    console.log("Fetching GitHub user data for:", GITHUB_USERNAME);
+    const octokit = createOctokit();
 
-    if (!response.ok) {
-      console.warn("GitHub API request failed, using mock data");
-      return mockGithubUser;
+    // Try to fetch user data - this might fail due to rate limits even without auth
+    try {
+      const response = await octokit.request("GET /users/{username}", {
+        username: GITHUB_USERNAME,
+        headers: {
+          "X-GitHub-Api-Version": "2022-11-28",
+        },
+      });
+
+      console.log("GitHub API response status:", response.status);
+
+      if (response && response.status === 200) {
+        console.log("GitHub user data successfully fetched");
+        return response.data as GitHubUser;
+      }
+    } catch (apiError) {
+      console.warn(
+        "GitHub API request failed:",
+        apiError instanceof Error ? apiError.message : apiError
+      );
     }
 
-    return await response.json();
+    // If we get here, use mock data
+    console.warn("Falling back to mock GitHub user data");
+    return mockGithubUser;
   } catch (error) {
-    console.error("Error fetching GitHub user:", error);
+    console.error("Unexpected error fetching GitHub user:", error);
+    // Log details if available
+    if (error instanceof Error) {
+      console.error("Error message:", error.message);
+    }
+
+    // Return mock data as fallback
     return mockGithubUser;
   }
 }
 
-async function fetchLanguageStats(repos_url: string): Promise<{
+async function fetchLanguageStats(username: string): Promise<{
   topLanguages: { name: string; percentage: number; color: string }[];
   totalStars: number;
   totalForks: number;
 }> {
   try {
-    const reposResponse = await fetch(repos_url, {
-      headers: {
-        Accept: "application/vnd.github+json",
-        Authorization: `Bearer ${
-          process.env.NEXT_PUBLIC_GITHUB_TOKEN ||
-          "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"
-        }`,
-        "X-GitHub-Api-Version": "2022-11-28",
-      },
-    });
+    console.log("Fetching language stats for:", username);
+    const octokit = createOctokit();
 
-    if (!reposResponse.ok) {
-      console.warn("GitHub repos API request failed, using mock data");
-      return mockLanguageStats;
-    }
+    // Try to fetch repos - this might fail due to rate limits even without auth
+    try {
+      const reposResponse = await octokit.request(
+        "GET /users/{username}/repos",
+        {
+          username,
+          per_page: 100,
+          sort: "updated",
+          direction: "desc",
+          headers: {
+            "X-GitHub-Api-Version": "2022-11-28",
+          },
+        }
+      );
 
-    const repos: GitHubRepo[] = await reposResponse.json();
+      console.log("GitHub repos API response status:", reposResponse.status);
 
-    // If we got an empty array, use mock data
-    if (!repos || repos.length === 0) {
-      console.warn("GitHub API returned empty repos, using mock data");
-      return mockLanguageStats;
-    }
+      if (reposResponse && reposResponse.status === 200) {
+        const repos = reposResponse.data as GitHubRepo[];
+        console.log(`Found ${repos.length} repositories for ${username}`);
 
-    // Count languages
-    const languageCounts: Record<string, number> = {};
-    let totalCount = 0;
+        if (repos && repos.length > 0) {
+          // Count languages
+          const languageCounts: Record<string, number> = {};
+          let totalCount = 0;
 
-    // Language colors mapping
-    const languageColors: Record<string, string> = {
-      JavaScript: "#f1e05a",
-      TypeScript: "#2b7489",
-      Python: "#3572A5",
-      "C++": "#f34b7d",
-      HTML: "#e34c26",
-      CSS: "#563d7c",
-      Java: "#b07219",
-      Go: "#00ADD8",
-      Ruby: "#701516",
-      Rust: "#dea584",
-      PHP: "#4F5D95",
-    };
+          // Language colors mapping
+          const languageColors: Record<string, string> = {
+            JavaScript: "#f1e05a",
+            TypeScript: "#2b7489",
+            Python: "#3572A5",
+            "C++": "#f34b7d",
+            HTML: "#e34c26",
+            CSS: "#563d7c",
+            Java: "#b07219",
+            Go: "#00ADD8",
+            Ruby: "#701516",
+            Rust: "#dea584",
+            PHP: "#4F5D95",
+            "Jupyter Notebook": "#DA5B0B",
+          };
 
-    // Calculate stars and forks
-    let totalStars = 0;
-    let totalForks = 0;
+          // Calculate stars and forks
+          let totalStars = 0;
+          let totalForks = 0;
 
-    repos.forEach((repo) => {
-      totalStars += repo.stargazers_count;
-      totalForks += repo.forks_count;
+          // Process each repository
+          for (const repo of repos) {
+            // Skip forks if they don't belong to the user
+            if (repo.fork && repo.owner.login !== username) {
+              continue;
+            }
 
-      const language = repo.language;
-      if (language) {
-        languageCounts[language] = (languageCounts[language] || 0) + 1;
-        totalCount++;
+            totalStars += repo.stargazers_count || 0;
+            totalForks += repo.forks_count || 0;
+
+            const language = repo.language;
+            if (language) {
+              languageCounts[language] = (languageCounts[language] || 0) + 1;
+              totalCount++;
+            }
+          }
+
+          console.log("Language counts:", languageCounts);
+          console.log("Total stars:", totalStars);
+          console.log("Total forks:", totalForks);
+
+          // If no languages found, use mock data
+          if (totalCount === 0) {
+            console.warn("No languages found in GitHub repos, using mock data");
+            return mockLanguageStats;
+          }
+
+          // Convert to percentage and format
+          const topLanguages = Object.entries(languageCounts)
+            .map(([name, count]) => {
+              const percentage = Math.round((count / totalCount) * 100);
+              return {
+                name,
+                percentage,
+                color: languageColors[name] || "#333333", // Fallback color
+              };
+            })
+            .sort((a, b) => b.percentage - a.percentage)
+            .slice(0, 5); // Get top 5 languages
+
+          console.log("Top languages:", topLanguages);
+
+          return { topLanguages, totalStars, totalForks };
+        }
       }
-    });
 
-    // If no languages found, use mock data
-    if (totalCount === 0) {
-      console.warn("No languages found in GitHub repos, using mock data");
+      // If we get here, fallback to mock data
+      console.warn(
+        "Failed to get useful data from GitHub API, using mock data"
+      );
+      return mockLanguageStats;
+    } catch (apiError) {
+      console.warn(
+        "GitHub API request failed:",
+        apiError instanceof Error ? apiError.message : apiError
+      );
       return mockLanguageStats;
     }
-
-    // Convert to percentage and format
-    const topLanguages = Object.entries(languageCounts)
-      .map(([name, count]) => {
-        const percentage = Math.round((count / totalCount) * 100);
-        return {
-          name,
-          percentage,
-          color: languageColors[name] || "#333333", // Fallback color
-        };
-      })
-      .sort((a, b) => b.percentage - a.percentage)
-      .slice(0, 5); // Get top 5 languages
-
-    return { topLanguages, totalStars, totalForks };
   } catch (error) {
-    console.error("Error fetching language stats:", error);
+    console.error("Unexpected error fetching language stats:", error);
+    // Log details if available
+    if (error instanceof Error) {
+      console.error("Error message:", error.message);
+    }
+
     return mockLanguageStats;
   }
 }
 
 export default function GithubStats({ detailed = false }: GithubStatsProps) {
-  // Fetch GitHub user data
-  const {
-    data: githubUser,
-    isLoading: isUserLoading,
-    error: userError,
-  } = useQuery({
-    queryKey: ["githubUser"],
+  // Track the source of data (API vs Mock)
+  const [dataSource, setDataSource] = useState<"loading" | "api" | "mock">(
+    "loading"
+  );
+
+  // Fetch GitHub user data with React Query
+  const userQuery = useQuery({
+    queryKey: ["githubUser", GITHUB_USERNAME],
     queryFn: fetchGitHubUser,
-    staleTime: 3600000, // 1 hour
+    staleTime: 60000, // 1 minute
     retry: 1,
-    retryDelay: 1000,
   });
 
-  // Fetch language stats once we have the user data
-  const {
-    data: languageData,
-    isLoading: isLangLoading,
-    error: langError,
-  } = useQuery({
-    queryKey: ["githubLanguages"],
-    queryFn: () =>
-      githubUser
-        ? fetchLanguageStats(githubUser.repos_url)
-        : Promise.resolve(mockLanguageStats),
-    enabled: !!githubUser?.repos_url,
-    staleTime: 3600000, // 1 hour
+  // Fetch language stats with React Query
+  const languageQuery = useQuery({
+    queryKey: ["githubLanguages", GITHUB_USERNAME],
+    queryFn: () => fetchLanguageStats(GITHUB_USERNAME),
+    staleTime: 60000, // 1 minute
     retry: 1,
-    retryDelay: 1000,
   });
 
-  const isLoading = isUserLoading || isLangLoading;
-  const hasError = userError || langError;
+  // Update dataSource state when data changes
+  useEffect(() => {
+    if (userQuery.data) {
+      const isMockData = userQuery.data.login === mockGithubUser.login;
+      console.log(
+        "GitHub data source:",
+        isMockData ? "MOCK DATA" : "REAL API DATA"
+      );
+      setDataSource(isMockData ? "mock" : "api");
+    } else if (userQuery.isError) {
+      console.log("GitHub API error, using mock data");
+      setDataSource("mock");
+    }
+  }, [userQuery.data, userQuery.isError]);
+
+  // Extract data and loading states
+  const githubUser = userQuery.data;
+  const languageData = languageQuery.data;
+  const isLoading = userQuery.isPending || languageQuery.isPending;
+  const hasError = userQuery.isError || languageQuery.isError;
 
   // Loading state
   if (isLoading) {
@@ -241,136 +319,257 @@ export default function GithubStats({ detailed = false }: GithubStatsProps) {
 
   // Error state - fallback to mock data
   if (hasError) {
-    console.error("Error loading GitHub data:", userError || langError);
+    console.error(
+      "Error loading GitHub data:",
+      userQuery.error || languageQuery.error
+    );
   }
 
   // Use the data or fallback to mock data if something went wrong
   const user = githubUser || mockGithubUser;
   const languages = languageData || mockLanguageStats;
 
-  // Combine data into our stats format
-  const stats = {
-    name: user.name || user.login,
-    followers: user.followers,
-    following: user.following,
-    public_repos: user.public_repos,
-    created_at: user.created_at,
-    avatar_url: user.avatar_url,
-    bio: user.bio || "Fullstack Developer and Software Engineer",
-    location: user.location || "India",
-    html_url: user.html_url,
-    topLanguages: languages.topLanguages,
-    totalStars: languages.totalStars,
-    totalForks: languages.totalForks,
-  };
+  // Log what data we're using
+  console.log(
+    "Using user data:",
+    user.login === mockGithubUser.login ? "MOCK" : "REAL",
+    user
+  );
+  console.log(
+    "Using language data:",
+    languages === mockLanguageStats ? "MOCK" : "REAL",
+    languages
+  );
 
-  // Format time on GitHub
-  const accountCreated = new Date(stats.created_at);
-  const yearsOnGitHub = new Date().getFullYear() - accountCreated.getFullYear();
-
-  return (
-    <section className={`py-12 ${!detailed && "border-t"}`}>
-      <div className="container">
-        <h2 className="text-3xl font-bold mb-8 text-blueviolet">
-          GitHub Stats
-        </h2>
-
-        {/* GitHub overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="rounded-lg border p-6">
-            <h3 className="text-xl font-semibold mb-4">Profile Overview</h3>
-
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-3">
-                <Users className="text-blueviolet" />
-                <span>
-                  <strong>{stats.followers}</strong> followers ·{" "}
-                  <strong>{stats.following}</strong> following
-                </span>
+  // Default compact view
+  if (!detailed) {
+    return (
+      <section className="py-12 border-t border-border">
+        <div className="container">
+          <h2 className="text-3xl font-bold mb-8 text-blueviolet">
+            GitHub Stats
+            {dataSource === "mock" && (
+              <span className="text-xs font-normal text-amber ml-2 align-top">
+                (Mock data)
+              </span>
+            )}
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="rounded-lg border p-6 bg-background">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-semibold">Profile Overview</h3>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link
+                    href={user.html_url}
+                    target="_blank"
+                    className="text-muted-foreground"
+                  >
+                    @{user.login}
+                  </Link>
+                </Button>
               </div>
 
-              <div className="flex items-center gap-3">
-                <Code className="text-blueviolet" />
-                <span>
-                  <strong>{stats.public_repos}</strong> public repositories
-                </span>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Star className="text-amber" />
-                <span>
-                  <strong>{stats.totalStars}</strong> total stars on
-                  repositories
-                </span>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <GitFork className="text-orange" />
-                <span>
-                  <strong>{stats.totalForks}</strong> total forks on
-                  repositories
-                </span>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Calendar className="text-blueviolet" />
-                <span>
-                  <strong>{yearsOnGitHub}</strong> years on GitHub
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-6">
-              <Button asChild variant="outline" size="sm">
-                <Link
-                  href={stats.html_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  View GitHub Profile
-                </Link>
-              </Button>
-            </div>
-          </div>
-
-          {/* Top Languages */}
-          <div className="rounded-lg border p-6">
-            <h3 className="text-xl font-semibold mb-4">Top Languages</h3>
-
-            <div className="space-y-4">
-              {stats.topLanguages.map((lang) => (
-                <div key={lang.name}>
-                  <div className="flex justify-between mb-1">
-                    <span className="font-medium">{lang.name}</span>
-                    <span className="text-muted-foreground">
-                      {lang.percentage}%
-                    </span>
-                  </div>
-                  <div className="w-full bg-muted rounded-full h-2.5">
-                    <div
-                      className="h-2.5 rounded-full"
-                      style={{
-                        width: `${lang.percentage}%`,
-                        backgroundColor: lang.color,
-                      }}
-                      aria-label={`${lang.name} ${lang.percentage}%`}
-                    ></div>
-                  </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-orange" />
+                  <span className="text-sm text-muted-foreground">
+                    <strong className="text-foreground">
+                      {user.followers}
+                    </strong>{" "}
+                    Followers
+                  </span>
                 </div>
-              ))}
+
+                <div className="flex items-center gap-2">
+                  <Code className="h-5 w-5 text-amber" />
+                  <span className="text-sm text-muted-foreground">
+                    <strong className="text-foreground">
+                      {user.public_repos}
+                    </strong>{" "}
+                    Repos
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Star className="h-5 w-5 text-rose" />
+                  <span className="text-sm text-muted-foreground">
+                    <strong className="text-foreground">
+                      {languages.totalStars}
+                    </strong>{" "}
+                    Stars
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <GitFork className="h-5 w-5 text-blueviolet" />
+                  <span className="text-sm text-muted-foreground">
+                    <strong className="text-foreground">
+                      {languages.totalForks}
+                    </strong>{" "}
+                    Forks
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-lg border p-6 bg-background">
+              <h3 className="text-xl font-semibold mb-4">Top Languages</h3>
+
+              <div className="space-y-4">
+                {languages.topLanguages.map((lang) => (
+                  <div key={lang.name}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-medium">{lang.name}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {lang.percentage}%
+                      </span>
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-2.5">
+                      <div
+                        className="h-2.5 rounded-full"
+                        style={{
+                          width: `${lang.percentage}%`,
+                          backgroundColor: lang.color,
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
+      </section>
+    );
+  }
 
-        {detailed && (
-          <>
-            {/* Additional stats can be shown when detailed=true */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-              {/* More stats would go here */}
+  // Detailed view for dedicated pages
+  return (
+    <div className="space-y-8">
+      {dataSource === "mock" && (
+        <div className="text-center py-2 bg-amber/10 rounded-lg border border-amber/30">
+          <p className="text-sm text-amber-700">
+            <span className="font-medium">⚠️ Using mock GitHub data</span> - API
+            connection unavailable. The data shown is placeholder data.
+          </p>
+        </div>
+      )}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="rounded-lg border p-6 bg-background">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <div>
+                <h3 className="text-xl font-bold">{user.name || user.login}</h3>
+                <Button
+                  variant="link"
+                  className="p-0 h-auto text-blueviolet"
+                  asChild
+                >
+                  <Link href={user.html_url} target="_blank">
+                    @{user.login}
+                  </Link>
+                </Button>
+              </div>
             </div>
-          </>
-        )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-y-6">
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" />
+              <div>
+                <p className="text-sm text-muted-foreground">Followers</p>
+                <p className="font-medium">{user.followers}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" />
+              <div>
+                <p className="text-sm text-muted-foreground">Following</p>
+                <p className="font-medium">{user.following}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Code className="h-5 w-5 text-primary" />
+              <div>
+                <p className="text-sm text-muted-foreground">Repositories</p>
+                <p className="font-medium">{user.public_repos}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-primary" />
+              <div>
+                <p className="text-sm text-muted-foreground">Joined</p>
+                <p className="font-medium">
+                  {new Date(user.created_at).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "short",
+                  })}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {user.bio && (
+            <div className="mt-6 pt-6 border-t">
+              <h4 className="text-sm font-medium text-muted-foreground mb-2">
+                Bio
+              </h4>
+              <p className="text-sm">{user.bio}</p>
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-lg border p-6 bg-background">
+          <h3 className="text-xl font-semibold mb-6">Language Distribution</h3>
+
+          <div className="space-y-6">
+            {languages.topLanguages.map((lang) => (
+              <div key={lang.name}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-medium">{lang.name}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {lang.percentage}%
+                  </span>
+                </div>
+                <div className="w-full bg-muted rounded-full h-3">
+                  <div
+                    className="h-3 rounded-full"
+                    style={{
+                      width: `${lang.percentage}%`,
+                      backgroundColor: lang.color,
+                    }}
+                  ></div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 mt-8 pt-6 border-t">
+            <div className="flex flex-col items-center p-4 rounded-lg bg-muted/50">
+              <Star className="h-6 w-6 mb-2 text-amber" />
+              <span className="text-2xl font-bold">{languages.totalStars}</span>
+              <span className="text-sm text-muted-foreground">Total Stars</span>
+            </div>
+            <div className="flex flex-col items-center p-4 rounded-lg bg-muted/50">
+              <GitFork className="h-6 w-6 mb-2 text-rose" />
+              <span className="text-2xl font-bold">{languages.totalForks}</span>
+              <span className="text-sm text-muted-foreground">Total Forks</span>
+            </div>
+          </div>
+        </div>
       </div>
-    </section>
+
+      <div className="flex justify-center">
+        <Button
+          asChild
+          variant="outline"
+          className="border-orange text-orange hover:bg-orange hover:text-white"
+        >
+          <Link href={user.html_url} target="_blank">
+            View Full GitHub Profile
+          </Link>
+        </Button>
+      </div>
+    </div>
   );
 }

@@ -343,19 +343,21 @@ async function fetchLeetCodeStats(): Promise<LeetCodeStats> {
 }
 
 export default function LeetcodeStats() {
+  // Fetch LeetCode Stats
   const {
-    data: stats,
-    isLoading,
+    data: leetCodeStats = mockLeetCodeStats,
+    isPending,
+    isError,
     error,
   } = useQuery({
     queryKey: ["leetcodeStats"],
     queryFn: fetchLeetCodeStats,
-    staleTime: 3600000, // 1 hour
-    retry: 1, // Only retry once
-    retryDelay: 1000, // Wait 1 second before retrying
+    staleTime: 60 * 60 * 1000, // 1 hour
+    retry: 1,
   });
 
-  if (isLoading) {
+  // Loading state
+  if (isPending) {
     return (
       <section className="border border-amber rounded-lg p-6 animate-pulse">
         <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
@@ -368,21 +370,24 @@ export default function LeetcodeStats() {
     );
   }
 
-  if (!stats) {
+  if (!leetCodeStats) {
     return null;
   }
 
   // Convert submission calendar to a format we can display
   // LeetCode stores timestamps in seconds since epoch
-  const calendarEntries: LeetCodeCalendarEntry[] = stats.submissionCalendar
-    ? Object.entries(stats.submissionCalendar)
-        .map(([timestamp, count]) => ({
-          date: new Date(parseInt(timestamp) * 1000).toISOString(),
-          count: Number(count),
-        }))
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-        .slice(-70) // Last 70 days
-    : [];
+  const calendarEntries: LeetCodeCalendarEntry[] =
+    leetCodeStats.submissionCalendar
+      ? Object.entries(leetCodeStats.submissionCalendar)
+          .map(([timestamp, count]) => ({
+            date: new Date(parseInt(timestamp) * 1000).toISOString(),
+            count: Number(count),
+          }))
+          .sort(
+            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+          )
+          .slice(-70) // Last 70 days
+      : [];
 
   // Get the max count for scaling the heatmap
   const maxCount =
@@ -417,8 +422,12 @@ export default function LeetcodeStats() {
               <div className="text-center">
                 <div className="w-16 h-16 mx-auto mb-2">
                   <CircularProgressbar
-                    value={(stats.totalSolved / stats.totalQuestions) * 100}
-                    text={`${stats.totalSolved}`}
+                    value={
+                      (leetCodeStats.totalSolved /
+                        leetCodeStats.totalQuestions) *
+                      100
+                    }
+                    text={`${leetCodeStats.totalSolved}`}
                     styles={buildStyles({
                       pathColor: "#3a86ff",
                       textColor: "#3a86ff",
@@ -429,14 +438,16 @@ export default function LeetcodeStats() {
                 </div>
                 <p className="text-gray-600 text-xs">Total</p>
                 <p className="text-gray-800 text-xs">
-                  {stats.totalQuestions} problems
+                  {leetCodeStats.totalQuestions} problems
                 </p>
               </div>
               <div className="text-center">
                 <div className="w-16 h-16 mx-auto mb-2">
                   <CircularProgressbar
-                    value={(stats.easySolved / stats.totalEasy) * 100}
-                    text={`${stats.easySolved}`}
+                    value={
+                      (leetCodeStats.easySolved / leetCodeStats.totalEasy) * 100
+                    }
+                    text={`${leetCodeStats.easySolved}`}
                     styles={buildStyles({
                       pathColor: "#ffbe0b",
                       textColor: "#ffbe0b",
@@ -447,14 +458,17 @@ export default function LeetcodeStats() {
                 </div>
                 <p className="text-gray-600 text-xs">Easy</p>
                 <p className="text-gray-800 text-xs">
-                  {stats.totalEasy} problems
+                  {leetCodeStats.totalEasy} problems
                 </p>
               </div>
               <div className="text-center">
                 <div className="w-16 h-16 mx-auto mb-2">
                   <CircularProgressbar
-                    value={(stats.mediumSolved / stats.totalMedium) * 100}
-                    text={`${stats.mediumSolved}`}
+                    value={
+                      (leetCodeStats.mediumSolved / leetCodeStats.totalMedium) *
+                      100
+                    }
+                    text={`${leetCodeStats.mediumSolved}`}
                     styles={buildStyles({
                       pathColor: "#ff6b35",
                       textColor: "#ff6b35",
@@ -465,14 +479,16 @@ export default function LeetcodeStats() {
                 </div>
                 <p className="text-gray-600 text-xs">Medium</p>
                 <p className="text-gray-800 text-xs">
-                  {stats.totalMedium} problems
+                  {leetCodeStats.totalMedium} problems
                 </p>
               </div>
               <div className="text-center">
                 <div className="w-16 h-16 mx-auto mb-2">
                   <CircularProgressbar
-                    value={(stats.hardSolved / stats.totalHard) * 100}
-                    text={`${stats.hardSolved}`}
+                    value={
+                      (leetCodeStats.hardSolved / leetCodeStats.totalHard) * 100
+                    }
+                    text={`${leetCodeStats.hardSolved}`}
                     styles={buildStyles({
                       pathColor: "#f72585",
                       textColor: "#f72585",
@@ -483,7 +499,7 @@ export default function LeetcodeStats() {
                 </div>
                 <p className="text-gray-600 text-xs">Hard</p>
                 <p className="text-gray-800 text-xs">
-                  {stats.totalHard} problems
+                  {leetCodeStats.totalHard} problems
                 </p>
               </div>
             </div>
@@ -494,7 +510,9 @@ export default function LeetcodeStats() {
                   <span>Total Progress</span>
                   <span>
                     {Math.round(
-                      (stats.totalSolved / stats.totalQuestions) * 100
+                      (leetCodeStats.totalSolved /
+                        leetCodeStats.totalQuestions) *
+                        100
                     )}
                     %
                   </span>
@@ -504,7 +522,9 @@ export default function LeetcodeStats() {
                     className="h-full rounded-full bg-azure"
                     style={{
                       width: `${
-                        (stats.totalSolved / stats.totalQuestions) * 100
+                        (leetCodeStats.totalSolved /
+                          leetCodeStats.totalQuestions) *
+                        100
                       }%`,
                     }}
                   ></div>
@@ -514,12 +534,12 @@ export default function LeetcodeStats() {
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span>Acceptance Rate</span>
-                  <span>{stats.acceptanceRate}%</span>
+                  <span>{leetCodeStats.acceptanceRate}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
                     className="h-full rounded-full bg-amber"
-                    style={{ width: `${stats.acceptanceRate}%` }}
+                    style={{ width: `${leetCodeStats.acceptanceRate}%` }}
                   ></div>
                 </div>
               </div>
@@ -534,10 +554,10 @@ export default function LeetcodeStats() {
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-sm text-gray-600">Global Ranking</p>
                 <p className="text-2xl font-bold">
-                  #{stats.ranking.toLocaleString()}
+                  #{leetCodeStats.ranking.toLocaleString()}
                 </p>
                 <span className="text-xs px-2 py-1 bg-blueviolet text-white rounded-full">
-                  Top {Math.ceil((stats.ranking / 5000000) * 100)}%
+                  Top {Math.ceil((leetCodeStats.ranking / 5000000) * 100)}%
                 </span>
               </div>
 
@@ -545,14 +565,14 @@ export default function LeetcodeStats() {
                 <div className="bg-gray-50 p-3 rounded-lg">
                   <p className="text-sm text-gray-600">Solved Problems</p>
                   <p className="text-2xl font-bold text-orange">
-                    {stats.totalSolved}
+                    {leetCodeStats.totalSolved}
                   </p>
                 </div>
-                {stats.contributionPoints && (
+                {leetCodeStats.contributionPoints && (
                   <div className="bg-gray-50 p-3 rounded-lg">
                     <p className="text-sm text-gray-600">Contribution Points</p>
                     <p className="text-2xl font-bold text-azure">
-                      {stats.contributionPoints}
+                      {leetCodeStats.contributionPoints}
                     </p>
                   </div>
                 )}

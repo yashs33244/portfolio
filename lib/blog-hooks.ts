@@ -7,39 +7,41 @@ import {
   createBlogPost,
   updateBlogPost,
   deleteBlogPost,
-  toggleFeaturedPost
+  toggleFeaturedPost,
 } from './blog-service';
 import { BlogPost } from '@/types/blog';
 
-// Query keys
+// Query keys for blog posts
 export const blogKeys = {
   all: ['blogs'] as const,
   lists: () => [...blogKeys.all, 'list'] as const,
-  list: (filters: any) => [...blogKeys.lists(), filters] as const,
+  list: (filters: Record<string, any>) => [...blogKeys.lists(), { ...filters }] as const,
   details: () => [...blogKeys.all, 'detail'] as const,
   detail: (slug: string) => [...blogKeys.details(), slug] as const,
 };
 
-// Get all blog posts with pagination and filters
-export function useBlogPosts(filters: {
-  page?: number;
-  limit?: number;
-  category?: string;
-  featured?: boolean;
-  admin?: boolean;
-} = {}) {
+// Fetch all blog posts with optional filters
+export function useBlogPosts(
+  filters: { 
+    limit?: number; 
+    page?: number; 
+    category?: string;
+    featured?: boolean;
+    published?: boolean;
+  } = {}
+) {
   return useQuery({
     queryKey: blogKeys.list(filters),
     queryFn: () => fetchBlogPosts(filters),
   });
 }
 
-// Get a single blog post by slug
+// Fetch a single blog post by slug
 export function useBlogPost(slug: string) {
   return useQuery({
     queryKey: blogKeys.detail(slug),
     queryFn: () => fetchBlogPost(slug),
-    enabled: !!slug,
+    enabled: !!slug, // Only run the query if slug is provided
   });
 }
 
@@ -48,9 +50,10 @@ export function useCreateBlogPost() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (post: Partial<BlogPost>) => createBlogPost(post),
-    onSuccess: () => {
+    mutationFn: createBlogPost,
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: blogKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: blogKeys.detail(data.slug) });
     },
   });
 }
@@ -60,12 +63,18 @@ export function useUpdateBlogPost() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ slug, post }: { slug: string; post: Partial<BlogPost> }) => 
-      updateBlogPost(slug, post),
+    mutationFn: ({ slug, post }: { slug: string; post: Partial<BlogPost> }) => {
+      console.log(`Mutation triggered for ${slug} with data:`, post);
+      return updateBlogPost(slug, post);
+    },
     onSuccess: (data) => {
+      console.log(`Mutation succeeded, invalidating queries for ${data.slug}`);
       queryClient.invalidateQueries({ queryKey: blogKeys.lists() });
       queryClient.invalidateQueries({ queryKey: blogKeys.detail(data.slug) });
     },
+    onError: (error) => {
+      console.error('Update blog post mutation failed:', error);
+    }
   });
 }
 
@@ -74,7 +83,7 @@ export function useDeleteBlogPost() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (slug: string) => deleteBlogPost(slug),
+    mutationFn: deleteBlogPost,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: blogKeys.lists() });
     },

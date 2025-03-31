@@ -4,10 +4,9 @@ import prisma from '@/lib/prisma';
 // POST /api/blog/:slug/view
 export async function POST(
   req: NextRequest,
-  { params }: any
+  context: { params: { slug: string } }
 ) {
-  const resolvedParams = await Promise.resolve(params);
-  const slug = resolvedParams.slug;
+  const slug = context.params.slug;
 
   try {
     // Find the post

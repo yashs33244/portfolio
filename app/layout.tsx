@@ -1,17 +1,20 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Roboto } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
-import Navbar from "@/components/navbar";
-import Footer from "@/components/footer";
 import { Providers } from "./providers";
 
-const inter = Inter({ subsets: ["latin"] });
+// Use Roboto font
+const roboto = Roboto({
+  weight: ["300", "400", "500", "700"],
+  subsets: ["latin"],
+  display: "swap",
+});
 
 export const metadata: Metadata = {
-  title: "Yash Singh | Fullstack Developer & Software Engineer",
+  title: "Tanish Singh | Full Stack Developer & Software Engineer",
   description:
-    "Professional portfolio of Yash Singh, a passionate Software Engineer and Fullstack Developer",
+    "Professional portfolio of Tanish Singh, a passionate Software Engineer and Full Stack Developer.",
 };
 
 export default function RootLayout({
@@ -21,20 +24,39 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Preload mermaid script to avoid hydration issues */}
+        <script
+          async
+          src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"
+        />
+        {/* Initialize mermaid to prevent hydration issues */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if (typeof window !== 'undefined') {
+                window.onMermaidLoad = function() {
+                  if (window.mermaid) {
+                    window.mermaid.initialize({
+                      startOnLoad: false,
+                      theme: 'default',
+                      securityLevel: 'loose'
+                    });
+                  }
+                };
+              }
+            `,
+          }}
+        />
+      </head>
       <body
         className={cn(
-          inter.className,
+          roboto.className,
           "min-h-screen bg-background antialiased"
         )}
         suppressHydrationWarning
       >
-        <Providers>
-          <div className="relative flex min-h-screen flex-col">
-            <Navbar />
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </div>
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

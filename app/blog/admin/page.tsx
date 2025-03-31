@@ -16,6 +16,7 @@ import {
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import Footer from "@/components/footer";
 import {
   Table,
   TableBody,
@@ -58,7 +59,10 @@ export default function BlogAdminPage() {
   }, [isAuthenticated, router]);
 
   // Fetch posts using TanStack Query
-  const { data, isLoading, error } = useBlogPosts({ admin: true, limit: 50 });
+  const { data, isLoading, error } = useBlogPosts({
+    published: false, // Fetch all posts, not just published ones
+    limit: 50,
+  });
   const posts = data?.posts || [];
 
   // Mutation hooks
@@ -135,175 +139,181 @@ export default function BlogAdminPage() {
   }
 
   return (
-    <div className="container py-12">
-      <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Blog Admin</h1>
-        <div className="flex gap-4">
-          <Button asChild>
-            <Link href="/blog/admin/new">
-              <Plus className="mr-2 h-4 w-4" /> New Post
-            </Link>
-          </Button>
-          <Button variant="outline" onClick={handleLogout}>
-            <LogOut className="mr-2 h-4 w-4" /> Logout
-          </Button>
+    <>
+      <div className="container py-12">
+        <div className="mb-8 flex items-center justify-between">
+          <h1 className="text-3xl font-bold">Blog Admin</h1>
+          <div className="flex gap-4">
+            <Button asChild>
+              <Link href="/blog/admin/new">
+                <Plus className="mr-2 h-4 w-4" /> New Post
+              </Link>
+            </Button>
+            <Button variant="outline" onClick={handleLogout}>
+              <LogOut className="mr-2 h-4 w-4" /> Logout
+            </Button>
+          </div>
         </div>
-      </div>
 
-      {posts.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-8 text-center">
-          <h2 className="text-lg font-medium">No blog posts yet</h2>
-          <p className="text-muted-foreground mt-2">
-            Create your first blog post to get started.
-          </p>
-          <Button className="mt-4" asChild>
-            <Link href="/blog/admin/new">
-              <Plus className="mr-2 h-4 w-4" /> Create Post
-            </Link>
-          </Button>
-        </div>
-      ) : (
-        <div className="rounded-lg border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Categories</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Views</TableHead>
-                <TableHead className="w-[120px]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {posts.map((post: BlogPost) => (
-                <TableRow key={post.id}>
-                  <TableCell className="font-medium max-w-[200px] truncate">
-                    {post.title}
-                  </TableCell>
-                  <TableCell>
-                    {post.published ? (
-                      <Badge variant="default" className="bg-amber text-black">
-                        Published
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline">Draft</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell className="max-w-[150px] truncate">
-                    <div className="flex flex-wrap gap-1">
-                      {post.categories?.map((category: Category) => (
-                        <Badge
-                          key={category.id}
-                          variant="outline"
-                          className="border-orange text-orange"
-                        >
-                          {category.name}
-                        </Badge>
-                      ))}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {format(new Date(post.createdAt), "MMM d, yyyy")}
-                  </TableCell>
-                  <TableCell>{post.views}</TableCell>
-                  <TableCell className="whitespace-nowrap">
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-muted-foreground hover:text-foreground"
-                        onClick={() => toggleFeatured(post)}
-                        disabled={toggleFeaturedMutation.isPending}
-                        title={
-                          post.featured
-                            ? "Remove from featured"
-                            : "Add to featured"
-                        }
-                      >
-                        {post.featured ? (
-                          <Star className="h-4 w-4 text-amber" />
-                        ) : (
-                          <StarOff className="h-4 w-4" />
-                        )}
-                      </Button>
-
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-muted-foreground hover:text-foreground"
-                        asChild
-                      >
-                        <Link href={`/blog/${post.slug}`} title="View post">
-                          <Eye className="h-4 w-4" />
-                        </Link>
-                      </Button>
-
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-muted-foreground hover:text-foreground"
-                        asChild
-                      >
-                        <Link
-                          href={`/blog/admin/edit/${post.slug}`}
-                          title="Edit post"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Link>
-                      </Button>
-
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-muted-foreground hover:text-destructive"
-                            title="Delete post"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>
-                              Delete Blog Post
-                            </AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to delete "{post.title}"?
-                              This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              onClick={() => deletePost(post.slug)}
-                              disabled={
-                                deleting === post.slug ||
-                                deleteMutation.isPending
-                              }
-                            >
-                              {deleting === post.slug ? (
-                                <>
-                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                  Deleting...
-                                </>
-                              ) : (
-                                "Delete"
-                              )}
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </TableCell>
+        {posts.length === 0 ? (
+          <div className="rounded-lg border border-dashed p-8 text-center">
+            <h2 className="text-lg font-medium">No blog posts yet</h2>
+            <p className="text-muted-foreground mt-2">
+              Create your first blog post to get started.
+            </p>
+            <Button className="mt-4" asChild>
+              <Link href="/blog/admin/new">
+                <Plus className="mr-2 h-4 w-4" /> Create Post
+              </Link>
+            </Button>
+          </div>
+        ) : (
+          <div className="rounded-lg border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Categories</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Views</TableHead>
+                  <TableHead className="w-[120px]">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
-    </div>
+              </TableHeader>
+              <TableBody>
+                {posts.map((post: BlogPost) => (
+                  <TableRow key={post.id}>
+                    <TableCell className="font-medium max-w-[200px] truncate">
+                      {post.title}
+                    </TableCell>
+                    <TableCell>
+                      {post.published ? (
+                        <Badge
+                          variant="default"
+                          className="bg-amber text-black"
+                        >
+                          Published
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline">Draft</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="max-w-[150px] truncate">
+                      <div className="flex flex-wrap gap-1">
+                        {post.categories?.map((category: Category) => (
+                          <Badge
+                            key={category.id}
+                            variant="outline"
+                            className="border-orange text-orange"
+                          >
+                            {category.name}
+                          </Badge>
+                        ))}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {format(new Date(post.createdAt), "MMM d, yyyy")}
+                    </TableCell>
+                    <TableCell>{post.views}</TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-muted-foreground hover:text-foreground"
+                          onClick={() => toggleFeatured(post)}
+                          disabled={toggleFeaturedMutation.isPending}
+                          title={
+                            post.featured
+                              ? "Remove from featured"
+                              : "Add to featured"
+                          }
+                        >
+                          {post.featured ? (
+                            <Star className="h-4 w-4 text-amber" />
+                          ) : (
+                            <StarOff className="h-4 w-4" />
+                          )}
+                        </Button>
+
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-muted-foreground hover:text-foreground"
+                          asChild
+                        >
+                          <Link href={`/blog/${post.slug}`} title="View post">
+                            <Eye className="h-4 w-4" />
+                          </Link>
+                        </Button>
+
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-muted-foreground hover:text-foreground"
+                          asChild
+                        >
+                          <Link
+                            href={`/blog/admin/edit/${post.slug}`}
+                            title="Edit post"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Link>
+                        </Button>
+
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-muted-foreground hover:text-destructive"
+                              title="Delete post"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Delete Blog Post
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete "{post.title}"?
+                                This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                onClick={() => deletePost(post.slug)}
+                                disabled={
+                                  deleting === post.slug ||
+                                  deleteMutation.isPending
+                                }
+                              >
+                                {deleting === post.slug ? (
+                                  <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Deleting...
+                                  </>
+                                ) : (
+                                  "Delete"
+                                )}
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </div>
+      <Footer />
+    </>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,9 +14,22 @@ import Link from "next/link";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { BlogPost } from "@/types/blog";
 import { useAuth } from "@/hooks/use-auth";
+import { use } from "react";
 
-export default function EditPostPage({ params }: any) {
-  const slug = params.slug;
+// Define type for route params
+interface PostParams {
+  slug: string;
+}
+
+// Use the recommended React.use() method to unwrap the params promise
+export default function EditPostPage({
+  params,
+}: {
+  params: Promise<PostParams>;
+}) {
+  // Unwrap the params promise using React.use()
+  const resolvedParams = use(params);
+  const slug = resolvedParams.slug;
   const router = useRouter();
   const { isAuthenticated } = useAuth();
 
@@ -33,13 +46,6 @@ export default function EditPostPage({ params }: any) {
   const [published, setPublished] = useState(false);
   const [featured, setFeatured] = useState(false);
 
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/blog/admin/login");
-    }
-  }, [isAuthenticated, router]);
-
   // Set initial form values when post data is loaded
   useEffect(() => {
     if (post) {
@@ -55,11 +61,7 @@ export default function EditPostPage({ params }: any) {
     }
   }, [post]);
 
-  // If not authenticated, show nothing (redirect will happen in useEffect)
-  if (!isAuthenticated) {
-    return null;
-  }
-
+  // Handle form submission with better error handling
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -69,44 +71,56 @@ export default function EditPostPage({ params }: any) {
     }
 
     try {
+      console.log("Submitting blog post update...");
+
       // Generate new slug if title has changed
       const newSlug =
         title !== post?.title
           ? slugify(title, { lower: true, strict: true })
-          : post.slug;
+          : post?.slug || slug;
 
-      // Parse categories from comma-separated string
+      // Parse categories from comma-separated string and convert to slugs
       const categoryList = categories
         .split(",")
         .map((cat) => cat.trim())
-        .filter(Boolean);
+        .filter(Boolean)
+        .map((cat) => slugify(cat, { lower: true, strict: true })); // Convert to slug format
 
-      // Calculate reading time (rough estimate)
-      const readingTime = Math.max(
-        1,
-        Math.ceil(content.split(/\s+/).length / 200)
-      );
+      console.log("Update data:", {
+        slug,
+        title,
+        newSlug,
+        excerpt,
+        published,
+        featured,
+        categories: categoryList,
+      });
 
+      // Update directly with all the data needed
       await updateBlogPost.mutateAsync({
         slug,
         post: {
+          id: post?.id, // Include the ID to ensure proper record update
           title,
           slug: newSlug,
           content,
           excerpt: excerpt || title,
-          coverImage: coverImage || null,
+          coverImage: coverImage || undefined,
           published,
           featured,
-          readingTime,
-          categories: categoryList as any, // Cast string[] to any to satisfy the type checker
+          categories: categoryList as any, // Use type assertion for now
         },
       });
 
       toast.success("Blog post updated successfully");
       router.push("/blog/admin");
     } catch (error) {
-      toast.error("Failed to update blog post");
       console.error("Error updating blog post:", error);
+      toast.error(
+        `Failed to update blog post: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   };
 
@@ -128,6 +142,10 @@ export default function EditPostPage({ params }: any) {
           <p className="text-muted-foreground mt-2">
             The post you are trying to edit does not exist or could not be
             loaded.
+          </p>
+          <p className="text-muted-foreground mt-2">Slug: {slug}</p>
+          <p className="text-muted-foreground mt-2">
+            Error: {error instanceof Error ? error.message : "Unknown error"}
           </p>
           <Button className="mt-4" variant="outline" asChild>
             <Link href="/blog/admin">Back to Admin</Link>
@@ -231,7 +249,7 @@ export default function EditPostPage({ params }: any) {
               id="content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="Write your post content in HTML"
+              placeholder="Write your post content in Markdown format including Mermaid diagrams"
               className="min-h-[400px]"
               required
             />

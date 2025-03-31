@@ -23,7 +23,7 @@ interface BlogPostPageProps {
 export async function generateMetadata({
   params,
 }: BlogPostPageProps): Promise<Metadata> {
-  const slug = params.slug;
+  const slug = (await Promise.resolve(params)).slug;
   const post = await getPost(slug);
 
   if (!post) {
@@ -89,7 +89,7 @@ async function getPost(slug: string) {
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
-  const slug = params.slug;
+  const slug = (await Promise.resolve(params)).slug;
   const post = await getPost(slug);
 
   if (!post || (!post.published && process.env.NODE_ENV === "production")) {

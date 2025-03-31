@@ -91,8 +91,10 @@ export function BlogEditor({ post, categories = [] }: BlogEditorProps) {
           slug: post.slug,
           post: {
             ...values,
-            id: post.id,
-          } as any,
+            // Don't pass categories as objects, pass as string array
+            // @ts-ignore
+            categories: values.categories,
+          },
         });
         toast.success("Blog post updated successfully");
       } else {

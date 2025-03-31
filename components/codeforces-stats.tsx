@@ -161,7 +161,7 @@ function getRatingColor(rating: number): string {
 export default function CodeforcesStats() {
   const {
     data: userInfo,
-    isLoading: isUserLoading,
+    isPending: isUserPending,
     error: userError,
   } = useQuery({
     queryKey: ["codeforcesUser"],
@@ -173,7 +173,7 @@ export default function CodeforcesStats() {
 
   const {
     data: submissions,
-    isLoading: isSubmissionsLoading,
+    isPending: isSubmissionsPending,
     error: submissionsError,
   } = useQuery({
     queryKey: ["codeforcesSubmissions"],
@@ -183,11 +183,11 @@ export default function CodeforcesStats() {
     retryDelay: 1000,
   });
 
-  const isLoading = isUserLoading || isSubmissionsLoading;
+  const isPending = isUserPending || isSubmissionsPending;
 
   // We'll never have an error now since we're using mock data as fallback
   // But keeping error handling for robustness
-  if (isLoading) {
+  if (isPending) {
     return (
       <div className="border border-amber rounded-lg p-6 animate-pulse">
         <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>

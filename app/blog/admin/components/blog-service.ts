@@ -6,6 +6,20 @@ import { Category } from '@prisma/client';
 // Base URL for API calls
 const API_URL = '/api/blog';
 
+// Interface for post update data with readingTime
+export interface PostUpdateData {
+  title?: string;
+  slug?: string;
+  content?: string;
+  excerpt?: string;
+  coverImage?: string;
+  published?: boolean;
+  featured?: boolean;
+  categories?: string[];
+  readingTime?: number;
+  [key: string]: any; // Allow additional properties
+}
+
 // Fetch a blog post by ID or slug
 export async function fetchBlogPost(idOrSlug: string): Promise<BlogPost> {
   const response = await fetch(`${API_URL}/${idOrSlug}`);
@@ -50,35 +64,46 @@ export async function createBlogPost(data: {
 }
 
 // Update an existing blog post
-export async function updateBlogPost(slug: string, data: {
-  title?: string;
-  slug?: string;
-  content?: string;
-  excerpt?: string;
-  coverImage?: string;
-  published?: boolean;
-  featured?: boolean;
-  categories?: string[];
-}): Promise<BlogPost> {
+export async function updateBlogPost(slug: string, data: PostUpdateData): Promise<BlogPost> {
   // Calculate reading time if content is included
-  const postData = { ...data } as any;
   if (data.content) {
-    postData.readingTime = calculateReadingTime(data.content);
+    data.readingTime = calculateReadingTime(data.content);
   }
   
-  const response = await fetch(`${API_URL}/${slug}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(postData),
-  });
+  console.log(`Sending update request for blog post: ${slug}`, data);
   
-  if (!response.ok) {
-    throw new Error(`Failed to update blog post: ${response.statusText}`);
+  try {
+    const response = await fetch(`${API_URL}/${slug}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    
+    // Get response text first for debugging
+    const responseText = await response.text();
+    
+    if (!response.ok) {
+      console.error(`Error response from API: ${responseText}`);
+      throw new Error(`Failed to update blog post: ${response.status} ${response.statusText}`);
+    }
+    
+    // Parse the response text as JSON
+    let responseData;
+    try {
+      responseData = JSON.parse(responseText);
+      console.log(`Update successful, received data:`, responseData);
+    } catch (e) {
+      console.error(`Failed to parse response as JSON: ${responseText}`);
+      throw new Error(`Invalid response format from server: ${e instanceof Error ? e.message : 'Unknown error'}`);
+    }
+    
+    return responseData;
+  } catch (error) {
+    console.error(`Error updating blog post ${slug}:`, error);
+    throw error;
   }
-  
-  return await response.json();
 }
 
 // Delete a blog post

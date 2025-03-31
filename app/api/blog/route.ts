@@ -73,6 +73,26 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     
+    // Handle categories properly
+    let categoryOperations = {};
+    if (body.categories && Array.isArray(body.categories)) {
+      // Normalize categories to ensure we always have string slugs
+      const categorySlugs = body.categories.map((category: any) => 
+        typeof category === 'string' ? category : category.slug
+      ).filter(Boolean);
+      
+      // Create a connectOrCreate operation for each category
+      categoryOperations = {
+        connectOrCreate: categorySlugs.map((slug: string) => ({
+          where: { slug },
+          create: {
+            name: slug.charAt(0).toUpperCase() + slug.slice(1).replace(/-/g, ' '),
+            slug,
+          },
+        })),
+      };
+    }
+    
     // Create new blog post
     const post = await prisma.post.create({
       data: {
@@ -85,17 +105,8 @@ export async function POST(req: NextRequest) {
         featured: body.featured || false,
         author: body.author || 'Tanish Singh',
         readingTime: body.readingTime,
-        ...(body.categories && {
-          categories: {
-            connectOrCreate: body.categories.map((category: string) => ({
-              where: { slug: category },
-              create: {
-                name: category,
-                slug: category,
-              },
-            })),
-          },
-        }),
+        // Add categories if provided
+        ...(body.categories ? { categories: categoryOperations } : {}),
       },
     });
 

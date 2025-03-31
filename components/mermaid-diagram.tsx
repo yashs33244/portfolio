@@ -1,90 +1,123 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Script from "next/script";
 
 interface MermaidDiagramProps {
   chart: string;
 }
 
-declare global {
-  interface Window {
-    mermaid: typeof mermaid;
-    onMermaidLoad?: () => void;
-  }
-}
-
 export function MermaidDiagram({ chart }: MermaidDiagramProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const [isMermaidLoaded, setIsMermaidLoaded] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
 
+  // First useEffect - only runs once on mount to set client-side state
+  useEffect(() => {
+    setIsClient(true);
+    setHasMounted(true);
+  }, []);
+
+  // Function to render the diagram
   const renderDiagram = () => {
-    if (ref.current) {
-      try {
-        // Clear previous content
-        ref.current.innerHTML = "";
+    if (!ref.current || !window.mermaid) return;
 
-        // Create the diagram element
-        const diagramElement = document.createElement("div");
-        diagramElement.className = "mermaid";
-        diagramElement.textContent = chart;
-        ref.current.appendChild(diagramElement);
+    try {
+      // Clear previous content
+      ref.current.innerHTML = "";
 
-        // Initialize mermaid with optimal settings
-        window.mermaid.initialize({
-          startOnLoad: false,
-          theme: "default",
-          securityLevel: "loose",
-        });
+      // Create a unique ID for the diagram
+      const id = `mermaid-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
 
-        // Trigger immediate rendering
-        window.mermaid.run();
-      } catch (err) {
-        console.error("Failed to render mermaid diagram:", err);
-        if (ref.current) {
-          ref.current.innerHTML = `
-            <div class="p-4 rounded-md bg-red-50 border border-red-200">
-              <p class="text-red-700 font-medium">Failed to render diagram</p>
-              <pre class="mt-2 overflow-auto text-sm p-2 bg-white border rounded">${chart}</pre>
-            </div>
-          `;
-        }
+      // Create the diagram element
+      const element = document.createElement("div");
+      element.className = "mermaid";
+      element.id = id;
+      element.textContent = chart;
+      ref.current.appendChild(element);
+
+      // Initialize mermaid with optimal settings
+      window.mermaid.initialize({
+        startOnLoad: false,
+        theme: "default",
+        securityLevel: "loose",
+        fontFamily: "inherit",
+      });
+
+      // Render the diagram
+      window.mermaid.run();
+    } catch (err) {
+      console.error("Failed to render mermaid diagram:", err);
+      if (ref.current) {
+        ref.current.innerHTML = `
+          <div class="p-4 rounded-md bg-red-50 border border-red-200">
+            <p class="text-red-700 font-medium">Failed to render diagram</p>
+            <pre class="mt-2 overflow-auto text-sm p-2 bg-white border rounded">${chart}</pre>
+          </div>
+        `;
       }
     }
   };
 
+  // Load and setup Mermaid script
   useEffect(() => {
-    // Define global handler for mermaid script load
+    if (!isClient) return;
+
+    // Define global callback for script load
     window.onMermaidLoad = () => {
-      renderDiagram();
+      setIsMermaidLoaded(true);
     };
 
-    // Try to render immediately if mermaid is already loaded
+    // Check if mermaid is already loaded
     if (window.mermaid) {
-      renderDiagram();
+      setIsMermaidLoaded(true);
+    } else {
+      // Load mermaid script if it's not already loaded
+      const script = document.createElement("script");
+      script.src =
+        "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js";
+      script.async = true;
+      script.onload = () => {
+        setIsMermaidLoaded(true);
+      };
+      document.body.appendChild(script);
     }
 
+    // Clean up
     return () => {
       window.onMermaidLoad = undefined;
     };
-  }, [chart]);
+  }, [isClient]);
+
+  // Render diagram when mermaid is loaded
+  useEffect(() => {
+    if (isClient && isMermaidLoaded && ref.current) {
+      // Small delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        renderDiagram();
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [chart, isMermaidLoaded, isClient]);
 
   return (
-    <>
-      <Script
-        id="mermaid-script"
-        src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"
-        strategy="beforeInteractive"
-        onLoad={() => {
-          renderDiagram();
-        }}
-      />
-
-      <div
-        ref={ref}
-        className="mermaid-container my-6 p-4 bg-white rounded-lg border border-gray-200 overflow-auto"
-      >
-        <div className="mermaid">{chart}</div>
+    <div
+      ref={ref}
+      className="mermaid-container my-6 p-4 bg-white rounded-lg border border-gray-200 overflow-auto"
+      suppressHydrationWarning
+    >
+      <div className="mermaid-content min-h-[100px] flex items-center justify-center">
+        {/* This content is the same on server and client to avoid hydration mismatch */}
+        <div className="text-gray-400" suppressHydrationWarning>
+          {!hasMounted ? "Loading diagram..." : ""}
+        </div>
+        {/* The chart text is just text at this point, so it doesn't cause hydration issues */}
+        <div style={{ display: "none" }} suppressHydrationWarning>
+          {chart}
+        </div>
       </div>
-    </>
+    </div>
   );
 }

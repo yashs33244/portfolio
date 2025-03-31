@@ -1,5 +1,7 @@
 import { Metadata } from "next";
 import { Suspense } from "react";
+import Navbar from "@/components/navbar";
+import Footer from "@/components/footer";
 import { BlogListing } from "@/components/blog-listing";
 import prisma from "@/lib/prisma";
 
@@ -67,49 +69,57 @@ export default async function BlogPage({ searchParams }: any) {
     }
 
     return (
-      <main className="container py-12">
-        <div className="mb-12 text-center">
-          <h1 className="mb-4 text-4xl font-bold tracking-tight">Blog</h1>
-          <p className="mx-auto max-w-[700px] text-lg text-muted-foreground">
-            Thoughts, ideas, and insights on software development, technology,
-            and more.
-          </p>
-        </div>
+      <>
+        <Navbar />
+        <main className="container py-12">
+          <div className="mb-12 text-center">
+            <h1 className="mb-4 text-4xl font-bold tracking-tight">Blog</h1>
+            <p className="mx-auto max-w-[700px] text-lg text-muted-foreground">
+              Thoughts, ideas, and insights on software development, technology,
+              and more.
+            </p>
+          </div>
 
-        <BlogListing
-          posts={posts}
-          pagination={{
-            total: totalPosts,
-            pages: Math.ceil(totalPosts / limit),
-            page,
-            limit,
-          }}
-        />
-      </main>
+          <BlogListing
+            posts={posts}
+            pagination={{
+              total: totalPosts,
+              pages: Math.ceil(totalPosts / limit),
+              page,
+              limit,
+            }}
+          />
+        </main>
+        <Footer />
+      </>
     );
   } catch (error) {
     console.error("Error fetching blog posts:", error);
     return (
-      <main className="container py-12">
-        <div className="mb-12 text-center">
-          <h1 className="mb-4 text-4xl font-bold tracking-tight">Blogs</h1>
-          <p className="mx-auto max-w-[700px] text-lg text-muted-foreground">
-            Thoughts, ideas, and insights on software development, technology,
-            and more.
-          </p>
-        </div>
-        <div className="rounded-lg border p-8 text-center">
-          <h2 className="text-lg font-medium text-destructive">
-            Error loading blog posts
-          </h2>
-          <p className="text-muted-foreground mt-2">
-            Sorry, we couldn't load the blog posts. Please try again later.
-          </p>
-          <pre className="mt-4 text-xs text-left bg-gray-100 p-4 rounded overflow-auto">
-            {String(error)}
-          </pre>
-        </div>
-      </main>
+      <>
+        <Navbar />
+        <main className="container py-12">
+          <div className="mb-12 text-center">
+            <h1 className="mb-4 text-4xl font-bold tracking-tight">Blogs</h1>
+            <p className="mx-auto max-w-[700px] text-lg text-muted-foreground">
+              Thoughts, ideas, and insights on software development, technology,
+              and more.
+            </p>
+          </div>
+          <div className="rounded-lg border p-8 text-center">
+            <h2 className="text-lg font-medium text-destructive">
+              Error loading blog posts
+            </h2>
+            <p className="text-muted-foreground mt-2">
+              Sorry, we couldn't load the blog posts. Please try again later.
+            </p>
+            <pre className="mt-4 text-xs text-left bg-gray-100 p-4 rounded overflow-auto">
+              {String(error)}
+            </pre>
+          </div>
+        </main>
+        <Footer />
+      </>
     );
   }
 }

@@ -12,13 +12,6 @@ import Link from "next/link";
 import { MermaidDiagram } from "./mermaid-diagram";
 import "katex/dist/katex.min.css";
 
-// Add type declaration for extended window object
-declare global {
-  interface Window {
-    onMermaidLoad?: () => void;
-  }
-}
-
 interface MdxProps {
   code: string;
 }
@@ -71,175 +64,221 @@ export function Mdx({ code }: MdxProps) {
           text-align: center;
           margin: 2rem auto;
         }
+
+        /* SVG Support */
+        .mdx svg {
+          max-width: 100%;
+          height: auto;
+          margin: 1rem auto;
+          display: block;
+        }
       `}</style>
 
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkMath]}
-        rehypePlugins={[rehypeKatex, rehypeRaw, rehypeSlug]}
-        components={{
-          h1: ({ className, children, ...props }) => (
-            <h1
-              className={`mt-10 scroll-m-20 text-4xl font-bold ${className}`}
-              {...props}
-            >
-              {children}
-            </h1>
-          ),
-          h2: ({ className, children, ...props }) => (
-            <h2
-              className={`mt-8 scroll-m-20 text-3xl font-semibold ${className}`}
-              {...props}
-            >
-              {children}
-            </h2>
-          ),
-          h3: ({ className, children, ...props }) => (
-            <h3
-              className={`mt-6 scroll-m-20 text-2xl font-semibold ${className}`}
-              {...props}
-            >
-              {children}
-            </h3>
-          ),
-          h4: ({ className, children, ...props }) => (
-            <h4
-              className={`mt-6 scroll-m-20 text-xl font-semibold ${className}`}
-              {...props}
-            >
-              {children}
-            </h4>
-          ),
-          a: ({ href, children, ...props }) => {
-            if (href?.startsWith("/")) {
-              return (
-                <Link href={href} {...props}>
-                  {children}
-                </Link>
-              );
-            }
-            return (
-              <a
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                {...props}
-              >
-                {children}
-              </a>
-            );
-          },
-          p: ({ node, children, ...props }: any) => {
-            const hasImage = node?.children?.some(
-              (child: any) => child.tagName === "img"
-            );
+      <div className="prose prose-amber dark:prose-invert max-w-none">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm, remarkMath]}
+          rehypePlugins={[rehypeKatex, rehypeRaw, rehypeSlug]}
+          components={{
+            a: ({ href, children }) => {
+              if (!href) return <span>{children}</span>;
 
-            const hasMermaid = node?.children?.some(
-              (child: any) =>
-                child.type === "element" &&
-                child.properties?.className?.includes("language-mermaid")
-            );
-
-            if (hasImage || hasMermaid) {
-              return <div {...props}>{children}</div>;
-            }
-
-            return (
-              <p {...props} suppressHydrationWarning>
-                {children}
-              </p>
-            );
-          },
-          img: ({ src, alt, title }) => {
-            if (!src) return null;
-
-            return (
-              <figure className="my-8">
-                <div className="relative aspect-video overflow-hidden rounded-lg border bg-muted">
-                  <Image
-                    src={src}
-                    alt={alt || ""}
-                    title={title || alt || ""}
-                    fill
-                    className="object-cover"
-                    sizes="(min-width: 1024px) 1000px, 100vw"
-                    priority
-                  />
-                </div>
-                {alt && (
-                  <figcaption className="mt-2 text-center text-sm text-muted-foreground">
-                    {alt}
-                  </figcaption>
-                )}
-              </figure>
-            );
-          },
-          pre: ({ node, children, ...props }: any) => {
-            try {
-              if (
-                node?.children?.length > 0 &&
-                node.children[0]?.tagName === "code" &&
-                node.children[0]?.properties?.className?.includes(
-                  "language-mermaid"
-                )
-              ) {
-                const content = node.children[0]?.children?.[0]?.value || "";
-                return <MermaidDiagram chart={content} />;
+              const isExternal = href.startsWith("http");
+              if (isExternal) {
+                return (
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 hover:text-blue-700 underline"
+                  >
+                    {children}
+                  </a>
+                );
               }
-            } catch (e) {
-              console.error("Error processing code block:", e);
-            }
 
-            let language = "";
-            if (node?.children?.[0]?.properties?.className?.[0]) {
-              language = node.children[0].properties.className[0].replace(
-                "language-",
-                ""
+              return <Link href={href}>{children}</Link>;
+            },
+            h1: ({ children }) => (
+              <h1 className="text-3xl font-bold tracking-tight mt-8 mb-4">
+                {children}
+              </h1>
+            ),
+            h2: ({ children }) => (
+              <h2 className="text-2xl font-bold tracking-tight mt-8 mb-4">
+                {children}
+              </h2>
+            ),
+            h3: ({ children }) => (
+              <h3 className="text-xl font-bold tracking-tight mt-6 mb-3">
+                {children}
+              </h3>
+            ),
+            h4: ({ children }) => (
+              <h4 className="text-lg font-bold tracking-tight mt-6 mb-3">
+                {children}
+              </h4>
+            ),
+
+            p: ({ node, children, ...props }: any) => {
+              const hasImage = node?.children?.some(
+                (child: any) => child.tagName === "img"
               );
-            }
 
-            return (
-              <pre {...props} className="code-block" data-language={language}>
-                {children}
-              </pre>
-            );
-          },
-          code: ({ className, children, ...props }) => {
-            const match = /language-(\w+)/.exec(className || "");
-            const language = match ? match[1] : "";
+              const hasMermaid = node?.children?.some(
+                (child: any) =>
+                  child.type === "element" &&
+                  child.properties?.className?.includes("language-mermaid")
+              );
 
-            return (
-              <code className={className} data-language={language} {...props}>
+              const hasSvg = node?.children?.some(
+                (child: any) =>
+                  child.tagName === "svg" ||
+                  (child.value && child.value.includes("<svg"))
+              );
+
+              if (hasImage || hasMermaid || hasSvg) {
+                return <div {...props}>{children}</div>;
+              }
+
+              return (
+                <p {...props} suppressHydrationWarning>
+                  {children}
+                </p>
+              );
+            },
+
+            img: ({ src, alt, title }) => {
+              if (!src) return null;
+
+              // Check if the image is an SVG
+              const isSvg = src.toLowerCase().endsWith(".svg");
+              if (isSvg) {
+                return (
+                  <figure className="my-8">
+                    <div className="relative overflow-hidden rounded-lg border bg-muted">
+                      <img
+                        src={src}
+                        alt={alt || ""}
+                        title={title || alt || ""}
+                        className="w-full h-auto max-h-[500px] object-contain"
+                      />
+                    </div>
+                    {alt && (
+                      <figcaption className="mt-2 text-center text-sm text-muted-foreground">
+                        {alt}
+                      </figcaption>
+                    )}
+                  </figure>
+                );
+              }
+
+              // For external URLs that don't support next/image
+              const isExternal = src.startsWith("http") || src.startsWith("//");
+
+              return (
+                <figure className="my-8">
+                  <div className="relative aspect-video overflow-hidden rounded-lg border bg-muted">
+                    {isExternal ? (
+                      <img
+                        src={src}
+                        alt={alt || ""}
+                        title={title || alt || ""}
+                        className="object-contain w-full h-full"
+                      />
+                    ) : (
+                      <Image
+                        src={src}
+                        alt={alt || ""}
+                        title={title || alt || ""}
+                        fill
+                        className="object-cover"
+                        sizes="(min-width: 1024px) 1000px, 100vw"
+                        priority
+                      />
+                    )}
+                  </div>
+                  {alt && (
+                    <figcaption className="mt-2 text-center text-sm text-muted-foreground">
+                      {alt}
+                    </figcaption>
+                  )}
+                </figure>
+              );
+            },
+
+            pre: ({ node, children, ...props }: any) => {
+              try {
+                if (
+                  node?.children?.length > 0 &&
+                  node.children[0]?.tagName === "code" &&
+                  node.children[0]?.properties?.className?.includes(
+                    "language-mermaid"
+                  )
+                ) {
+                  const content = node.children[0]?.children?.[0]?.value || "";
+                  return (
+                    <div suppressHydrationWarning>
+                      <MermaidDiagram chart={content} />
+                    </div>
+                  );
+                }
+              } catch (e) {
+                console.error("Error processing code block:", e);
+              }
+
+              let language = "";
+              if (node?.children?.[0]?.properties?.className?.[0]) {
+                language = node.children[0].properties.className[0].replace(
+                  "language-",
+                  ""
+                );
+              }
+
+              return (
+                <pre {...props} className="code-block" data-language={language}>
+                  {children}
+                </pre>
+              );
+            },
+
+            code: ({ className, children, ...props }) => {
+              const match = /language-(\w+)/.exec(className || "");
+              const language = match ? match[1] : "";
+
+              return (
+                <code className={className} data-language={language} {...props}>
+                  {children}
+                </code>
+              );
+            },
+            ul: ({ children, ...props }) => (
+              <ul className="my-6 ml-6 list-disc" {...props}>
                 {children}
-              </code>
-            );
-          },
-          ul: ({ children, ...props }) => (
-            <ul className="my-6 ml-6 list-disc" {...props}>
-              {children}
-            </ul>
-          ),
-          ol: ({ children, ...props }) => (
-            <ol className="my-6 ml-6 list-decimal" {...props}>
-              {children}
-            </ol>
-          ),
-          blockquote: ({ children, ...props }) => (
-            <blockquote className="mt-6 border-l-2 pl-6 italic" {...props}>
-              {children}
-            </blockquote>
-          ),
-          hr: () => <hr className="my-6" />,
-          table: ({ children, ...props }) => (
-            <div className="my-6 w-full overflow-y-auto">
-              <table className="w-full" {...props}>
+              </ul>
+            ),
+            ol: ({ children, ...props }) => (
+              <ol className="my-6 ml-6 list-decimal" {...props}>
                 {children}
-              </table>
-            </div>
-          ),
-        }}
-      >
-        {code}
-      </ReactMarkdown>
+              </ol>
+            ),
+            blockquote: ({ children, ...props }) => (
+              <blockquote className="mt-6 border-l-2 pl-6 italic" {...props}>
+                {children}
+              </blockquote>
+            ),
+            hr: () => <hr className="my-6" />,
+            table: ({ children, ...props }) => (
+              <div className="my-6 w-full overflow-y-auto">
+                <table className="w-full" {...props}>
+                  {children}
+                </table>
+              </div>
+            ),
+          }}
+        >
+          {code}
+        </ReactMarkdown>
+      </div>
     </div>
   );
 }
