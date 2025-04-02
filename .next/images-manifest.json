@@ -36,20 +36,27 @@
     "remotePatterns": [
       {
         "protocol": "https",
-        "hostname": "^(?:^(?:images\\.unsplash\\.com)$)$",
-        "port": "",
+        "hostname": "^(?:^(?:encrypted\\-tbn0\\.gstatic\\.com)$)$",
+        "pathname": "^(?:\\/images(?:\\/(?!\\.{1,2}(?:\\/|$))(?:(?:(?!(?:^|\\/)\\.{1,2}(?:\\/|$)).)*?)|$))$"
+      },
+      {
+        "protocol": "https",
+        "hostname": "^(?:^(?:avatars\\.githubusercontent\\.com)$)$",
         "pathname": "^(?:\\/(?!\\.{1,2}(?:\\/|$))(?:(?:(?!(?:^|\\/)\\.{1,2}(?:\\/|$)).)*?))$"
       },
       {
         "protocol": "https",
-        "hostname": "^(?:^(?:source\\.unsplash\\.com)$)$",
-        "port": "",
+        "hostname": "^(?:^(?:images\\.unsplash\\.com)$)$",
         "pathname": "^(?:\\/(?!\\.{1,2}(?:\\/|$))(?:(?:(?!(?:^|\\/)\\.{1,2}(?:\\/|$)).)*?))$"
       },
       {
         "protocol": "https",
         "hostname": "^(?:^(?:picsum\\.photos)$)$",
-        "port": "",
+        "pathname": "^(?:\\/(?!\\.{1,2}(?:\\/|$))(?:(?:(?!(?:^|\\/)\\.{1,2}(?:\\/|$)).)*?))$"
+      },
+      {
+        "protocol": "https",
+        "hostname": "^(?:^(?:source\\.unsplash\\.com)$)$",
         "pathname": "^(?:\\/(?!\\.{1,2}(?:\\/|$))(?:(?:(?!(?:^|\\/)\\.{1,2}(?:\\/|$)).)*?))$"
       },
       {
@@ -61,12 +68,6 @@
       {
         "protocol": "https",
         "hostname": "^(?:^(?:github\\.com)$)$",
-        "port": "",
-        "pathname": "^(?:\\/(?!\\.{1,2}(?:\\/|$))(?:(?:(?!(?:^|\\/)\\.{1,2}(?:\\/|$)).)*?))$"
-      },
-      {
-        "protocol": "https",
-        "hostname": "^(?:^(?:avatars\\.githubusercontent\\.com)$)$",
         "port": "",
         "pathname": "^(?:\\/(?!\\.{1,2}(?:\\/|$))(?:(?:(?!(?:^|\\/)\\.{1,2}(?:\\/|$)).)*?))$"
       },

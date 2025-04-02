@@ -15,6 +15,7 @@ export interface BlogPost {
   createdAt: string | Date;
   updatedAt: string | Date;
   categories: Category[];
+  className?: string;
 }
 
 export interface BlogListingProps {

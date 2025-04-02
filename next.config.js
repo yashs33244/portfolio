@@ -5,20 +5,27 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'images.unsplash.com',
-        port: '',
+        hostname: 'encrypted-tbn0.gstatic.com',
+        pathname: '/images/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com',
         pathname: '/**',
       },
       {
         protocol: 'https',
-        hostname: 'source.unsplash.com',
-        port: '',
+        hostname: 'images.unsplash.com',
         pathname: '/**',
       },
       {
         protocol: 'https',
         hostname: 'picsum.photos',
-        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'source.unsplash.com',
         pathname: '/**',
       },
       {
@@ -30,12 +37,6 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'github.com',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'avatars.githubusercontent.com',
         port: '',
         pathname: '/**',
       },
