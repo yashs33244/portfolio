@@ -29,6 +29,7 @@ model Post {
   views       Int        @default(0)
   author      String     @default("Yash Singh")
   readingTime Int? // Estimated reading time in minutes
+  BlogView    BlogView[]
 }
 
 // Category model for blog posts
@@ -37,4 +38,17 @@ model Category {
   name  String @unique
   slug  String @unique
   posts Post[] @relation("PostToCategory")
+}
+
+// Blog view tracking model
+model BlogView {
+  id        String   @id @default(cuid())
+  blogId    String
+  ip        String
+  userId    String?
+  createdAt DateTime @default(now())
+  blog      Post     @relation(fields: [blogId], references: [id])
+
+  @@index([blogId])
+  @@index([ip])
 }
