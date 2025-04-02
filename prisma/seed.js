@@ -78,7 +78,7 @@ Thanks for reading!
       coverImage: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c',
       published: true,
       featured: true,
-      author: 'Tanish Singh',
+      author: 'Yash Singh',
       readingTime: 5,
       views: 0,
       categories: {

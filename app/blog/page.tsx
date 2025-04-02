@@ -6,7 +6,7 @@ import { BlogListing } from "@/components/blog-listing";
 import prisma from "@/lib/prisma";
 
 export const metadata: Metadata = {
-  title: "Blog | Tanish Singh",
+  title: "Blog | Yash Singh",
   description:
     "Read the latest articles on software development, tech, and more.",
 };

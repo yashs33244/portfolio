@@ -12,9 +12,9 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "Tanish Singh | Full Stack Developer & Software Engineer",
+  title: "Yash Singh | Full Stack Developer & Software Engineer",
   description:
-    "Professional portfolio of Tanish Singh, a passionate Software Engineer and Full Stack Developer.",
+    "Professional portfolio of Yash Singh, a passionate Software Engineer and Full Stack Developer.",
 };
 
 export default function RootLayout({

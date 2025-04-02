@@ -30,8 +30,8 @@ export async function generateMetadata({
   }
 
   return {
-    title: `${category.name} | Blog | Tanish Singh`,
-    description: `Read blog posts about ${category.name} by Tanish Singh.`,
+    title: `${category.name} | Blog | Yash Singh`,
+    description: `Read blog posts about ${category.name} by Yash Singh.`,
   };
 }
 

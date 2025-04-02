@@ -88,46 +88,10 @@ const createOctokit = () => {
 // The GitHub username to fetch data for
 const GITHUB_USERNAME = "yashs33244";
 
+// For now, just return mock data without API calls
 async function fetchGitHubUser(): Promise<GitHubUser> {
-  try {
-    console.log("Fetching GitHub user data for:", GITHUB_USERNAME);
-    const octokit = createOctokit();
-
-    // Try to fetch user data - this might fail due to rate limits even without auth
-    try {
-      const response = await octokit.request("GET /users/{username}", {
-        username: GITHUB_USERNAME,
-        headers: {
-          "X-GitHub-Api-Version": "2022-11-28",
-        },
-      });
-
-      console.log("GitHub API response status:", response.status);
-
-      if (response && response.status === 200) {
-        console.log("GitHub user data successfully fetched");
-        return response.data as GitHubUser;
-      }
-    } catch (apiError) {
-      console.warn(
-        "GitHub API request failed:",
-        apiError instanceof Error ? apiError.message : apiError
-      );
-    }
-
-    // If we get here, use mock data
-    console.warn("Falling back to mock GitHub user data");
-    return mockGithubUser;
-  } catch (error) {
-    console.error("Unexpected error fetching GitHub user:", error);
-    // Log details if available
-    if (error instanceof Error) {
-      console.error("Error message:", error.message);
-    }
-
-    // Return mock data as fallback
-    return mockGithubUser;
-  }
+  console.log("Using mock GitHub user data");
+  return mockGithubUser;
 }
 
 async function fetchLanguageStats(username: string): Promise<{
@@ -135,131 +99,11 @@ async function fetchLanguageStats(username: string): Promise<{
   totalStars: number;
   totalForks: number;
 }> {
-  try {
-    console.log("Fetching language stats for:", username);
-    const octokit = createOctokit();
-
-    // Try to fetch repos - this might fail due to rate limits even without auth
-    try {
-      const reposResponse = await octokit.request(
-        "GET /users/{username}/repos",
-        {
-          username,
-          per_page: 100,
-          sort: "updated",
-          direction: "desc",
-          headers: {
-            "X-GitHub-Api-Version": "2022-11-28",
-          },
-        }
-      );
-
-      console.log("GitHub repos API response status:", reposResponse.status);
-
-      if (reposResponse && reposResponse.status === 200) {
-        const repos = reposResponse.data as GitHubRepo[];
-        console.log(`Found ${repos.length} repositories for ${username}`);
-
-        if (repos && repos.length > 0) {
-          // Count languages
-          const languageCounts: Record<string, number> = {};
-          let totalCount = 0;
-
-          // Language colors mapping
-          const languageColors: Record<string, string> = {
-            JavaScript: "#f1e05a",
-            TypeScript: "#2b7489",
-            Python: "#3572A5",
-            "C++": "#f34b7d",
-            HTML: "#e34c26",
-            CSS: "#563d7c",
-            Java: "#b07219",
-            Go: "#00ADD8",
-            Ruby: "#701516",
-            Rust: "#dea584",
-            PHP: "#4F5D95",
-            "Jupyter Notebook": "#DA5B0B",
-          };
-
-          // Calculate stars and forks
-          let totalStars = 0;
-          let totalForks = 0;
-
-          // Process each repository
-          for (const repo of repos) {
-            // Skip forks if they don't belong to the user
-            if (repo.fork && repo.owner.login !== username) {
-              continue;
-            }
-
-            totalStars += repo.stargazers_count || 0;
-            totalForks += repo.forks_count || 0;
-
-            const language = repo.language;
-            if (language) {
-              languageCounts[language] = (languageCounts[language] || 0) + 1;
-              totalCount++;
-            }
-          }
-
-          console.log("Language counts:", languageCounts);
-          console.log("Total stars:", totalStars);
-          console.log("Total forks:", totalForks);
-
-          // If no languages found, use mock data
-          if (totalCount === 0) {
-            console.warn("No languages found in GitHub repos, using mock data");
-            return mockLanguageStats;
-          }
-
-          // Convert to percentage and format
-          const topLanguages = Object.entries(languageCounts)
-            .map(([name, count]) => {
-              const percentage = Math.round((count / totalCount) * 100);
-              return {
-                name,
-                percentage,
-                color: languageColors[name] || "#333333", // Fallback color
-              };
-            })
-            .sort((a, b) => b.percentage - a.percentage)
-            .slice(0, 5); // Get top 5 languages
-
-          console.log("Top languages:", topLanguages);
-
-          return { topLanguages, totalStars, totalForks };
-        }
-      }
-
-      // If we get here, fallback to mock data
-      console.warn(
-        "Failed to get useful data from GitHub API, using mock data"
-      );
-      return mockLanguageStats;
-    } catch (apiError) {
-      console.warn(
-        "GitHub API request failed:",
-        apiError instanceof Error ? apiError.message : apiError
-      );
-      return mockLanguageStats;
-    }
-  } catch (error) {
-    console.error("Unexpected error fetching language stats:", error);
-    // Log details if available
-    if (error instanceof Error) {
-      console.error("Error message:", error.message);
-    }
-
-    return mockLanguageStats;
-  }
+  console.log("Using mock language stats");
+  return mockLanguageStats;
 }
 
 export default function GithubStats({ detailed = false }: GithubStatsProps) {
-  // Track the source of data (API vs Mock)
-  const [dataSource, setDataSource] = useState<"loading" | "api" | "mock">(
-    "loading"
-  );
-
   // Fetch GitHub user data with React Query
   const userQuery = useQuery({
     queryKey: ["githubUser", GITHUB_USERNAME],
@@ -275,21 +119,6 @@ export default function GithubStats({ detailed = false }: GithubStatsProps) {
     staleTime: 60000, // 1 minute
     retry: 1,
   });
-
-  // Update dataSource state when data changes
-  useEffect(() => {
-    if (userQuery.data) {
-      const isMockData = userQuery.data.login === mockGithubUser.login;
-      console.log(
-        "GitHub data source:",
-        isMockData ? "MOCK DATA" : "REAL API DATA"
-      );
-      setDataSource(isMockData ? "mock" : "api");
-    } else if (userQuery.isError) {
-      console.log("GitHub API error, using mock data");
-      setDataSource("mock");
-    }
-  }, [userQuery.data, userQuery.isError]);
 
   // Extract data and loading states
   const githubUser = userQuery.data;
@@ -348,7 +177,7 @@ export default function GithubStats({ detailed = false }: GithubStatsProps) {
         <div className="container">
           <h2 className="text-3xl font-bold mb-8 text-blueviolet">
             GitHub Stats
-            {dataSource === "mock" && (
+            {user.login === mockGithubUser.login && (
               <span className="text-xs font-normal text-amber ml-2 align-top">
                 (Mock data)
               </span>
@@ -446,7 +275,7 @@ export default function GithubStats({ detailed = false }: GithubStatsProps) {
   // Detailed view for dedicated pages
   return (
     <div className="space-y-8">
-      {dataSource === "mock" && (
+      {user.login === mockGithubUser.login && (
         <div className="text-center py-2 bg-amber/10 rounded-lg border border-amber/30">
           <p className="text-sm text-amber-700">
             <span className="font-medium">⚠️ Using mock GitHub data</span> - API

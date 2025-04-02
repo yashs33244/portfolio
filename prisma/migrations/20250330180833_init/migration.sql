@@ -11,7 +11,7 @@ CREATE TABLE "Post" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "views" INTEGER NOT NULL DEFAULT 0,
-    "author" TEXT NOT NULL DEFAULT 'Tanish Singh',
+    "author" TEXT NOT NULL DEFAULT 'Yash Singh',
     "readingTime" INTEGER,
 
     CONSTRAINT "Post_pkey" PRIMARY KEY ("id")

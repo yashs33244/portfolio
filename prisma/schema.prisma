@@ -27,7 +27,7 @@ model Post {
   updatedAt   DateTime   @updatedAt
   categories  Category[] @relation("PostToCategory")
   views       Int        @default(0)
-  author      String     @default("Tanish Singh")
+  author      String     @default("Yash Singh")
   readingTime Int? // Estimated reading time in minutes
 }
 

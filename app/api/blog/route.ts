@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
         coverImage: body.coverImage,
         published: body.published || false,
         featured: body.featured || false,
-        author: body.author || 'Tanish Singh',
+        author: body.author || 'Yash Singh',
         readingTime: body.readingTime,
         // Add categories if provided
         ...(body.categories ? { categories: categoryOperations } : {}),

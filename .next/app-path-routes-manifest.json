@@ -1,21 +1,21 @@
 {
   "/api/blog/[slug]/view/route": "/api/blog/[slug]/view",
-  "/_not-found/page": "/_not-found",
   "/api/blog/route": "/api/blog",
+  "/_not-found/page": "/_not-found",
   "/api/contact/route": "/api/contact",
   "/api/blog/auth/route": "/api/blog/auth",
   "/api/blog/[slug]/route": "/api/blog/[slug]",
-  "/blog/[slug]/page": "/blog/[slug]",
   "/about/page": "/about",
+  "/blog/[slug]/page": "/blog/[slug]",
   "/blog/category/[slug]/page": "/blog/category/[slug]",
   "/competitive/page": "/competitive",
-  "/experience/page": "/experience",
   "/contact/page": "/contact",
   "/page": "/",
   "/projects/page": "/projects",
+  "/experience/page": "/experience",
+  "/blog/page": "/blog",
   "/blog/admin/edit/[slug]/page": "/blog/admin/edit/[slug]",
   "/blog/admin/page": "/blog/admin",
   "/blog/admin/login/page": "/blog/admin/login",
-  "/blog/admin/new/page": "/blog/admin/new",
-  "/blog/page": "/blog"
+  "/blog/admin/new/page": "/blog/admin/new"
 }
