@@ -6,7 +6,7 @@ import { BlogListing } from "@/components/blog-listing";
 import prisma from "@/lib/prisma";
 
 export const metadata: Metadata = {
-  title: "Blog | Yash Singh",
+  title: "Blogs | Yash Singh",
   description:
     "Read the latest articles on software development, tech, and more.",
 };
@@ -73,10 +73,25 @@ export default async function BlogPage({ searchParams }: any) {
         <Navbar />
         <main className="container py-12">
           <div className="mb-12 text-center">
-            <h1 className="mb-4 text-4xl font-bold tracking-tight">Blog</h1>
-            <p className="mx-auto max-w-[700px] text-lg text-muted-foreground">
-              Thoughts, ideas, and insights on software development, technology,
-              and more.
+            <h1 className="mb-4 text-4xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+              Decoding My Thoughts
+            </h1>
+
+            <p className="mx-auto max-w-[700px] text-xl text-muted-foreground leading-relaxed">
+              Welcome to my digital garden—where insights on software
+              development, emerging technologies, and transformative ideas take
+              root.
+            </p>
+
+            <p className="mx-auto max-w-[700px] text-lg text-muted-foreground mt-4">
+              Every day I dive deep into new concepts, experiment with emerging
+              tools, and connect disparate ideas. This is where I distill those
+              discoveries into something valuable for both of us.
+            </p>
+
+            <p className="mx-auto max-w-[700px] text-lg font-medium mt-6">
+              No filters. No fluff. Just genuine explorations from the
+              frontlines of tech and beyond.
             </p>
           </div>
 
