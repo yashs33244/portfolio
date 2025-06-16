@@ -1,144 +1,138 @@
 import Link from "next/link";
-import { Github, Linkedin, Twitter } from "lucide-react";
-import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Github, Linkedin, Twitter, Mail, Phone, MapPin } from "lucide-react";
+
+const pageLinks = [
+  { name: "Home", href: "/" },
+  { name: "About", href: "/about" },
+  { name: "Projects", href: "/projects" },
+  { name: "Experience", href: "/experience" },
+  { name: "Competitive", href: "/competitive" },
+  { name: "Blog", href: "/blog" },
+  { name: "Contact", href: "/contact" },
+];
+
+const socialLinks = [
+  { name: "GitHub", href: "https://github.com/yashs33244", icon: Github },
+  {
+    name: "LinkedIn",
+    href: "https://linkedin.com/in/yashs33244",
+    icon: Linkedin,
+  },
+  { name: "Twitter", href: "https://twitter.com/yashs33244", icon: Twitter },
+];
 
 export default function Footer() {
   return (
-    <footer className="border-t">
-      <div className="container py-8 md:py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="md:col-span-2">
-            <div className="flex items-center gap-3 mb-4">
-              <Link href="/" className="font-bold text-xl">
-                Yash Singh
-              </Link>
+    <footer className="bg-figma-dark border-t border-white/10 pt-[100px]">
+      {/* Main footer content */}
+      <div className="figma-container py-16">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+          {/* Brand and description */}
+          <div className="md:col-span-1">
+            <div className="flex items-center gap-3 mb-6">
+              <span className="text-2xl font-normal text-white font-poppins">
+                itsyash
+              </span>
             </div>
-            <p className="text-muted-foreground mb-4 max-w-md">
-              Passionate Fullstack Developer and Data Science Enthusiast from
-              India, focused on building innovative solutions and solving
-              complex problems.
+            <p className="text-white/70 mb-6 leading-relaxed">
+              Fullstack Developer & Data Science Enthusiast crafting clean,
+              modern websites and applications.
             </p>
             <div className="flex gap-4">
-              <Link
-                href="https://github.com/yashs33244/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-primary transition-colors"
-              >
-                <Github className="h-5 w-5" />
-                <span className="sr-only">GitHub</span>
-              </Link>
-              <Link
-                href="#"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-primary transition-colors"
-              >
-                <Linkedin className="h-5 w-5" />
-                <span className="sr-only">LinkedIn</span>
-              </Link>
-              <Link
-                href="#"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-primary transition-colors"
-              >
-                <Twitter className="h-5 w-5" />
-                <span className="sr-only">Twitter</span>
-              </Link>
+              {socialLinks.map((social) => (
+                <Link
+                  key={social.name}
+                  href={social.href}
+                  className="w-10 h-10 bg-white/10 hover:bg-figma-gradient rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 group"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <social.icon className="w-5 h-5 text-white group-hover:text-black transition-colors duration-300" />
+                </Link>
+              ))}
             </div>
           </div>
 
-          <div>
-            <h3 className="font-medium mb-4">Quick Links</h3>
-            <ul className="space-y-2">
+          {/* Quick Links */}
+          <div className="md:col-span-1">
+            <h3 className="text-white font-semibold mb-6 text-lg">
+              Quick Links
+            </h3>
+            <ul className="space-y-3">
+              {pageLinks.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-white/70 hover:text-white transition-colors duration-200 hover:translate-x-1 inline-block"
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Services */}
+          <div className="md:col-span-1">
+            <h3 className="text-white font-semibold mb-6 text-lg">Services</h3>
+            <ul className="space-y-3">
               <li>
-                <Link
-                  href="/about"
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  About
-                </Link>
+                <span className="text-white/70">Frontend Development</span>
               </li>
               <li>
-                <Link
-                  href="/projects"
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  Projects
-                </Link>
+                <span className="text-white/70">Backend Development</span>
               </li>
               <li>
-                <Link
-                  href="/experience"
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  Experience
-                </Link>
+                <span className="text-white/70">Full Stack Solutions</span>
               </li>
               <li>
-                <Link
-                  href="/blog"
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  Blog
-                </Link>
+                <span className="text-white/70">Data Science</span>
               </li>
               <li>
-                <Link
-                  href="/contact"
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  Contact
-                </Link>
+                <span className="text-white/70">Cloud Infrastructure</span>
               </li>
             </ul>
           </div>
 
-          <div>
-            <h3 className="font-medium mb-4">Coding Profiles</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link
-                  href="https://leetcode.com/u/yashs33244/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  LeetCode
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="https://codeforces.com/profile/yashs3324"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  Codeforces
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="https://github.com/yashs33244/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  GitHub
-                </Link>
-              </li>
-            </ul>
+          {/* Contact Info & CTA */}
+          <div className="md:col-span-1">
+            <h3 className="text-white font-semibold mb-6 text-lg">
+              Get In Touch
+            </h3>
+            <div className="space-y-4 mb-6">
+              <div className="flex items-center gap-3">
+                <Mail className="w-4 h-4 text-figma-purple" />
+                <span className="text-white/70 text-sm">
+                  yashs3324@gmail.com
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <Phone className="w-4 h-4 text-figma-purple" />
+                <span className="text-white/70 text-sm">+91 8755-765-125</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <MapPin className="w-4 h-4 text-figma-purple" />
+                <span className="text-white/70 text-sm">India</span>
+              </div>
+            </div>
+
+            <Button
+              asChild
+              className="w-full bg-figma-gradient hover:bg-figma-gradient/90 text-black font-medium rounded-full transition-all duration-300 hover:scale-105"
+            >
+              <Link href="/contact">Let's Work Together</Link>
+            </Button>
           </div>
         </div>
+      </div>
 
-        <div className="border-t mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Yash Singh. All rights reserved.
-          </p>
-          <p className="text-sm text-muted-foreground mt-2 md:mt-0">
-            Built with Next.js and Tailwind CSS
-          </p>
+      {/* Large itsyash text */}
+      <div className="relative overflow-hidden py-20">
+        <div className="figma-container">
+          <h2 className="text-[120px] md:text-[180px] lg:text-[240px] font-bold text-center leading-none text-white/5 font-poppins select-none">
+            itsyash
+          </h2>
         </div>
       </div>
     </footer>

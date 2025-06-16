@@ -16,6 +16,7 @@ import {
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Loader } from "@/components/ui/loader";
 import {
   Table,
   TableBody,
@@ -49,6 +50,11 @@ export default function BlogAdminPage() {
   const router = useRouter();
   const { isAuthenticated, logout } = useAuth();
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -106,204 +112,302 @@ export default function BlogAdminPage() {
 
   if (isLoading) {
     return (
-      <div className="container py-12 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="min-h-screen bg-figma-dark figma-grid">
+        <div className="figma-container py-16">
+          <Loader size="lg" text="Loading blog posts..." fullScreen />
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="container py-12">
-        <div className="rounded-lg border border-destructive p-8 text-center">
-          <h2 className="text-lg font-medium text-destructive">
-            Error loading posts
-          </h2>
-          <p className="text-muted-foreground mt-2">
-            Please try again later or contact support.
-          </p>
-          <Button
-            className="mt-4"
-            variant="outline"
-            onClick={() => router.refresh()}
-          >
-            Try Again
-          </Button>
+      <div className="min-h-screen bg-figma-dark figma-grid">
+        <div className="figma-container py-16">
+          <div className="bg-figma-menu border border-red-500/20 rounded-lg p-8 text-center max-w-md mx-auto">
+            <h2 className="text-xl font-bold text-red-400 mb-4 font-poppins">
+              Error loading posts
+            </h2>
+            <p className="text-white/60 mb-6">
+              Please try again later or contact support.
+            </p>
+            <Button
+              onClick={() => router.refresh()}
+              className="bg-figma-gradient text-black font-medium hover:opacity-90 transition-opacity"
+            >
+              Try Again
+            </Button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container py-12">
-      <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Blog Admin</h1>
-        <div className="flex gap-4">
-          <Button asChild>
-            <Link href="/blog/admin/new">
-              <Plus className="mr-2 h-4 w-4" /> New Post
-            </Link>
-          </Button>
-          <Button variant="outline" onClick={handleLogout}>
-            <LogOut className="mr-2 h-4 w-4" /> Logout
-          </Button>
-        </div>
-      </div>
+    <div className="min-h-screen bg-figma-dark figma-grid">
+      <div className="figma-container py-16">
+        {/* Header */}
+        <div
+          className={`mb-12 transition-all duration-1000 ${
+            mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+          }`}
+        >
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-5xl font-bold text-white mb-4 font-poppins">
+                Blog <span className="text-figma-gradient">Admin</span>
+              </h1>
+              <p className="text-white/70 text-lg">
+                Manage your blog posts and content
+              </p>
+            </div>
+            <div className="flex gap-4">
+              <Button
+                asChild
+                className="bg-figma-gradient text-black font-medium hover:opacity-90 transition-opacity"
+              >
+                <Link href="/blog/admin/new">
+                  <Plus className="mr-2 h-4 w-4" /> New Post
+                </Link>
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleLogout}
+                className="border-white/20 text-white hover:bg-white/10 hover:text-white"
+              >
+                <LogOut className="mr-2 h-4 w-4" /> Logout
+              </Button>
+            </div>
+          </div>
 
-      {posts.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-8 text-center">
-          <h2 className="text-lg font-medium">No blog posts yet</h2>
-          <p className="text-muted-foreground mt-2">
-            Create your first blog post to get started.
-          </p>
-          <Button className="mt-4" asChild>
-            <Link href="/blog/admin/new">
-              <Plus className="mr-2 h-4 w-4" /> Create Post
-            </Link>
-          </Button>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-figma-menu border border-white/10 rounded-lg p-6 hover:border-figma-purple/30 transition-colors duration-300">
+              <h3 className="text-white/60 text-sm font-medium mb-2">
+                Total Posts
+              </h3>
+              <p className="text-3xl font-bold text-white">{posts.length}</p>
+            </div>
+            <div className="bg-figma-menu border border-white/10 rounded-lg p-6 hover:border-figma-purple/30 transition-colors duration-300">
+              <h3 className="text-white/60 text-sm font-medium mb-2">
+                Published
+              </h3>
+              <p className="text-3xl font-bold text-figma-gradient">
+                {posts.filter((p: BlogPost) => p.published).length}
+              </p>
+            </div>
+            <div className="bg-figma-menu border border-white/10 rounded-lg p-6 hover:border-figma-purple/30 transition-colors duration-300">
+              <h3 className="text-white/60 text-sm font-medium mb-2">
+                Featured
+              </h3>
+              <p className="text-3xl font-bold text-figma-gradient">
+                {posts.filter((p: BlogPost) => p.featured).length}
+              </p>
+            </div>
+          </div>
         </div>
-      ) : (
-        <div className="rounded-lg border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Categories</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Views</TableHead>
-                <TableHead className="w-[120px]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {posts.map((post: BlogPost) => (
-                <TableRow key={post.id}>
-                  <TableCell className="font-medium max-w-[200px] truncate">
-                    {post.title}
-                  </TableCell>
-                  <TableCell>
-                    {post.published ? (
-                      <Badge variant="default" className="bg-amber text-black">
-                        Published
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline">Draft</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell className="max-w-[150px] truncate">
-                    <div className="flex flex-wrap gap-1">
-                      {post.categories?.map((category: Category) => (
-                        <Badge
-                          key={category.id}
-                          variant="outline"
-                          className="border-orange text-orange"
-                        >
-                          {category.name}
-                        </Badge>
-                      ))}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {format(new Date(post.createdAt), "MMM d, yyyy")}
-                  </TableCell>
-                  <TableCell>{post.views}</TableCell>
-                  <TableCell className="whitespace-nowrap">
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-muted-foreground hover:text-foreground"
-                        onClick={() => toggleFeatured(post)}
-                        disabled={toggleFeaturedMutation.isPending}
-                        title={
-                          post.featured
-                            ? "Remove from featured"
-                            : "Add to featured"
-                        }
-                      >
-                        {post.featured ? (
-                          <Star className="h-4 w-4 text-amber" />
+
+        {posts.length === 0 ? (
+          <div
+            className={`transition-all duration-1000 delay-300 ${
+              mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+            }`}
+          >
+            <div className="bg-figma-menu border border-white/10 border-dashed rounded-lg p-12 text-center">
+              <h2 className="text-2xl font-bold text-white mb-4 font-poppins">
+                No blog posts yet
+              </h2>
+              <p className="text-white/60 mb-8 text-lg">
+                Create your first blog post to get started.
+              </p>
+              <Button
+                asChild
+                className="bg-figma-gradient text-black font-medium hover:opacity-90 transition-opacity"
+              >
+                <Link href="/blog/admin/new">
+                  <Plus className="mr-2 h-4 w-4" /> Create Post
+                </Link>
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div
+            className={`transition-all duration-1000 delay-300 ${
+              mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+            }`}
+          >
+            <div className="bg-figma-menu border border-white/10 rounded-lg overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-white/10 hover:bg-white/5">
+                    <TableHead className="text-white/80 font-medium">
+                      Title
+                    </TableHead>
+                    <TableHead className="text-white/80 font-medium">
+                      Status
+                    </TableHead>
+                    <TableHead className="text-white/80 font-medium">
+                      Categories
+                    </TableHead>
+                    <TableHead className="text-white/80 font-medium">
+                      Date
+                    </TableHead>
+                    <TableHead className="text-white/80 font-medium">
+                      Views
+                    </TableHead>
+                    <TableHead className="w-[120px] text-white/80 font-medium">
+                      Actions
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {posts.map((post: BlogPost, index: number) => (
+                    <TableRow
+                      key={post.id}
+                      className={`border-white/10 hover:bg-white/5 transition-all duration-300 ${
+                        mounted
+                          ? "opacity-100 translate-y-0"
+                          : "opacity-0 translate-y-4"
+                      }`}
+                      style={{ transitionDelay: `${index * 50}ms` }}
+                    >
+                      <TableCell className="font-medium max-w-[200px] truncate text-white">
+                        {post.title}
+                      </TableCell>
+                      <TableCell>
+                        {post.published ? (
+                          <Badge className="bg-figma-gradient text-black font-medium">
+                            Published
+                          </Badge>
                         ) : (
-                          <StarOff className="h-4 w-4" />
+                          <Badge
+                            variant="outline"
+                            className="border-white/20 text-white/70"
+                          >
+                            Draft
+                          </Badge>
                         )}
-                      </Button>
-
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-muted-foreground hover:text-foreground"
-                        asChild
-                      >
-                        <Link href={`/blog/${post.slug}`} title="View post">
-                          <Eye className="h-4 w-4" />
-                        </Link>
-                      </Button>
-
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-muted-foreground hover:text-foreground"
-                        asChild
-                      >
-                        <Link
-                          href={`/blog/admin/edit/${post.slug}`}
-                          title="Edit post"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Link>
-                      </Button>
-
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
+                      </TableCell>
+                      <TableCell className="max-w-[150px] truncate">
+                        <div className="flex flex-wrap gap-1">
+                          {post.categories?.map((category: Category) => (
+                            <Badge
+                              key={category.id}
+                              variant="outline"
+                              className="border-figma-purple/30 text-figma-purple text-xs"
+                            >
+                              {category.name}
+                            </Badge>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-white/70">
+                        {format(new Date(post.createdAt), "MMM d, yyyy")}
+                      </TableCell>
+                      <TableCell className="text-white/70">
+                        {post.views}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        <div className="flex items-center gap-2">
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="text-muted-foreground hover:text-destructive"
-                            title="Delete post"
+                            className="text-white/60 hover:text-figma-gradient hover:bg-white/10"
+                            onClick={() => toggleFeatured(post)}
+                            disabled={toggleFeaturedMutation.isPending}
+                            title={
+                              post.featured
+                                ? "Remove from featured"
+                                : "Add to featured"
+                            }
                           >
-                            <Trash2 className="h-4 w-4" />
+                            {post.featured ? (
+                              <Star className="h-4 w-4 text-figma-gradient fill-current" />
+                            ) : (
+                              <StarOff className="h-4 w-4" />
+                            )}
                           </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>
-                              Delete Blog Post
-                            </AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to delete "{post.title}"?
-                              This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              onClick={() => deletePost(post.slug)}
-                              disabled={
-                                deleting === post.slug ||
-                                deleteMutation.isPending
-                              }
+
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-white/60 hover:text-white hover:bg-white/10"
+                            asChild
+                          >
+                            <Link href={`/blog/${post.slug}`} title="View post">
+                              <Eye className="h-4 w-4" />
+                            </Link>
+                          </Button>
+
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-white/60 hover:text-white hover:bg-white/10"
+                            asChild
+                          >
+                            <Link
+                              href={`/blog/admin/edit/${post.slug}`}
+                              title="Edit post"
                             >
-                              {deleting === post.slug ? (
-                                <>
-                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                  Deleting...
-                                </>
-                              ) : (
-                                "Delete"
-                              )}
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+                              <Edit className="h-4 w-4" />
+                            </Link>
+                          </Button>
+
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-white/60 hover:text-red-400 hover:bg-red-500/10"
+                                title="Delete post"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="bg-figma-menu border-white/10">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle className="text-white font-poppins">
+                                  Delete Blog Post
+                                </AlertDialogTitle>
+                                <AlertDialogDescription className="text-white/70">
+                                  Are you sure you want to delete "{post.title}
+                                  "? This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel className="border-white/20 text-white hover:bg-white/10">
+                                  Cancel
+                                </AlertDialogCancel>
+                                <AlertDialogAction
+                                  className="bg-red-500 text-white hover:bg-red-600"
+                                  onClick={() => deletePost(post.slug)}
+                                  disabled={
+                                    deleting === post.slug ||
+                                    deleteMutation.isPending
+                                  }
+                                >
+                                  {deleting === post.slug ? (
+                                    <>
+                                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                      Deleting...
+                                    </>
+                                  ) : (
+                                    "Delete"
+                                  )}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

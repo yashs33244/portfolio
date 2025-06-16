@@ -32,8 +32,19 @@ export function MermaidDiagram({ chart }: MermaidDiagramProps) {
         // Initialize mermaid with optimal settings
         window.mermaid.initialize({
           startOnLoad: false,
-          theme: "default",
+          theme: "dark",
           securityLevel: "loose",
+          themeVariables: {
+            primaryColor: "#7a87fb",
+            primaryTextColor: "#ffffff",
+            primaryBorderColor: "#ffffff",
+            lineColor: "#ffffff",
+            sectionBkgColor: "#1e293b",
+            altSectionBkgColor: "#374151",
+            gridColor: "#374151",
+            secondaryColor: "#ffd49c",
+            tertiaryColor: "#1e293b",
+          },
         });
 
         // Trigger immediate rendering
@@ -42,9 +53,9 @@ export function MermaidDiagram({ chart }: MermaidDiagramProps) {
         console.error("Failed to render mermaid diagram:", err);
         if (ref.current) {
           ref.current.innerHTML = `
-            <div class="p-4 rounded-md bg-red-50 border border-red-200">
-              <p class="text-red-700 font-medium">Failed to render diagram</p>
-              <pre class="mt-2 overflow-auto text-sm p-2 bg-white border rounded">${chart}</pre>
+            <div class="p-4 rounded-md bg-red-900/20 border border-red-500/30">
+              <p class="text-red-400 font-medium">Failed to render diagram</p>
+              <pre class="mt-2 overflow-auto text-sm p-2 bg-figma-dark border border-white/20 rounded text-white">${chart}</pre>
             </div>
           `;
         }
@@ -81,7 +92,7 @@ export function MermaidDiagram({ chart }: MermaidDiagramProps) {
 
       <div
         ref={ref}
-        className="mermaid-container my-6 p-4 bg-white rounded-lg border border-gray-200 overflow-auto"
+        className="mermaid-container my-6 p-4 bg-figma-dark rounded-lg border border-white/20 overflow-auto"
       >
         <div className="mermaid">{chart}</div>
       </div>

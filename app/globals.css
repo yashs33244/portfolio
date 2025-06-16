@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -47,14 +49,187 @@
     --input: 217.2 32.6% 17.5%;
     --ring: 217 83% 60%;
   }
+  .theme {
+    --animate-marquee: marquee var(--duration) infinite linear;
+    --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
+    --animate-shine: shine var(--duration) infinite linear;
+  }
 }
 
 @layer base {
   * {
     @apply border-border;
   }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-figma-dark text-white font-poppins;
+    background-color: #101111;
+    color: #ffffff;
+  }
+
+  .figma-grid-line {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.2);
+    pointer-events: none;
+  }
+
+  .figma-grid-vertical {
+    width: 1px;
+    height: 100%;
+  }
+
+  .figma-grid-horizontal {
+    width: 100%;
+    height: 1px;
+  }
+}
+
+@layer utilities {
+  .bg-figma-dark {
+    background-color: #101111;
+  }
+
+  .bg-figma-card {
+    background-color: #151515;
+  }
+
+  .bg-figma-menu {
+    background-color: #1c1c1c;
+  }
+
+  .bg-figma-menu-item {
+    background-color: #292929;
+  }
+
+  .bg-figma-gradient {
+    background: linear-gradient(90deg, #7a87fb 0%, #ffd49c 100%);
+  }
+
+  .text-figma-gradient {
+    background: linear-gradient(90deg, #7a87fb 0%, #ffd49c 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .border-figma-gradient {
+    border: 1px solid transparent;
+    background: linear-gradient(90deg, #7a87fb 0%, #ffd49c 100%) border-box;
+    background-clip: border-box;
+  }
+
+  /* Grainy Gradient Utilities */
+  .bg-grainy-gradient-primary {
+    background: 
+      radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+      linear-gradient(135deg, #7a87fb 0%, #ffd49c 100%);
+    background-size: 20px 20px, 100% 100%;
+  }
+
+  .bg-grainy-gradient-dark {
+    background: 
+      radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(135deg, #101111 0%, #1a1a1a 50%, #101111 100%);
+    background-size: 15px 15px, 100% 100%;
+  }
+
+  .bg-grainy-gradient-purple {
+    background: 
+      radial-gradient(circle at 25% 75%, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+      linear-gradient(45deg, #7a87fb 0%, #9333ea 50%, #7a87fb 100%);
+    background-size: 25px 25px, 100% 100%;
+  }
+
+  .bg-grainy-gradient-orange {
+    background: 
+      radial-gradient(circle at 75% 25%, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+      linear-gradient(225deg, #ffd49c 0%, #f97316 50%, #ffd49c 100%);
+    background-size: 25px 25px, 100% 100%;
+  }
+
+  .bg-grainy-gradient-subtle {
+    background: 
+      radial-gradient(circle at 50% 50%, rgba(122, 135, 251, 0.03) 1px, transparent 1px),
+      linear-gradient(180deg, #101111 0%, #151515 50%, #101111 100%);
+    background-size: 30px 30px, 100% 100%;
+  }
+
+  .bg-grainy-gradient-radial {
+    background: 
+      radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+      radial-gradient(circle at 50% 50%, rgba(122, 135, 251, 0.1) 0%, rgba(255, 212, 156, 0.1) 50%, transparent 100%);
+    background-size: 18px 18px, 100% 100%;
+  }
+
+  .bg-grainy-texture {
+    background-image: 
+      radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.15) 1px, transparent 0);
+    background-size: 20px 20px;
+  }
+
+  .bg-noise-overlay {
+    position: relative;
+  }
+
+  .bg-noise-overlay::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+      radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 16px 16px;
+    pointer-events: none;
+    opacity: 0.3;
+  }
+
+  .font-poppins {
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .figma-grid {
+    position: relative;
+    background-image: 
+      linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 72px 72px;
+  }
+
+  .figma-container {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 162px;
+  }
+
+  .animate-marquee {
+    animation: marquee 20s linear infinite;
+  }
+
+  @keyframes marquee {
+    0% {
+      transform: translateX(0%);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  @media (max-width: 1440px) {
+    .figma-container {
+      padding: 0 80px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .figma-container {
+      padding: 0 20px;
+    }
   }
 }
 
@@ -132,3 +307,41 @@
   @apply border p-2 text-left;
 }
 
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@theme inline {
+  @keyframes marquee {
+  from {
+    transform: translateX(0);
+    }
+  to {
+    transform: translateX(calc(-100% - var(--gap)));
+    }
+  }
+  @keyframes marquee-vertical {
+  from {
+    transform: translateY(0);
+    }
+  to {
+    transform: translateY(calc(-100% - var(--gap)));
+    }
+  }
+  @keyframes shine {
+  0% {
+    background-position: 0% 0%;
+    }
+  50% {
+    background-position: 100% 100%;
+    }
+  to {
+    background-position: 0% 0%;
+    }
+  }
+}

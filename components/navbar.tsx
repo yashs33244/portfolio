@@ -2,125 +2,339 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ModeToggle } from "@/components/mode-toggle";
-import { Menu, X, Github, Code2 } from "lucide-react";
-import { useMobile } from "@/hooks/use-mobile";
+import Image from "next/image";
+import { cn } from "@/lib/utils";
+import { IconMenu2, IconX } from "@tabler/icons-react";
+import {
+  motion,
+  AnimatePresence,
+  useScroll,
+  useMotionValueEvent,
+} from "motion/react";
+import { useRef } from "react";
 
 const navItems = [
-  { name: "Home", path: "/" },
-  { name: "About", path: "/about" },
-  { name: "Projects", path: "/projects" },
-  { name: "Experience", path: "/experience" },
-  { name: "Competitive", path: "/competitive" },
-  { name: "Blog", path: "/blog" },
-  { name: "Contact", path: "/contact" },
+  { name: "Home", link: "/" },
+  { name: "About", link: "/about" },
+  { name: "Projects", link: "/projects" },
+  { name: "Experience", link: "/experience" },
+  { name: "Competitive", link: "/competitive" },
+  { name: "Blog", link: "/blog" },
+  { name: "Contact", link: "/contact" },
 ];
 
-export default function Navbar() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const pathname = usePathname();
-  const isMobile = useMobile();
+interface NavbarProps {
+  children: React.ReactNode;
+  className?: string;
+}
 
-  // Close menu when route changes
-  useEffect(() => {
-    setIsMenuOpen(false);
-  }, [pathname]);
+interface NavBodyProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+interface NavItemsProps {
+  items: {
+    name: string;
+    link: string;
+  }[];
+  className?: string;
+  onItemClick?: (e: React.MouseEvent<HTMLAnchorElement>, href: string) => void;
+}
+
+interface MobileNavProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+interface MobileNavHeaderProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+interface MobileNavMenuProps {
+  children: React.ReactNode;
+  className?: string;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const NavbarWrapper = ({ children, className }: NavbarProps) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollY } = useScroll();
+  const [isScrolled, setIsScrolled] = useState(false);
+  const prevScrollY = useRef(0);
+
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    const scrollingDown = latest > prevScrollY.current;
+    const scrollingUp = latest < prevScrollY.current;
+
+    if (scrollingDown) {
+      setIsScrolled(true);
+    } else if (scrollingUp) {
+      setIsScrolled(false);
+    }
+
+    prevScrollY.current = latest;
+  });
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-amber-500 bg-white">
-      <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link href="/" className="font-bold text-2xl text-blueviolet">
-            Yash Singh
-          </Link>
-        </div>
+    <motion.div
+      ref={ref}
+      className={cn(
+        "fixed inset-x-0 top-0 z-40 w-full flex justify-center mt-6 px-4",
+        className
+      )}
+    >
+      <motion.div
+        className="w-full max-w-6xl"
+        animate={{
+          width: isScrolled ? "60%" : "90%",
+        }}
+        transition={{
+          type: "spring",
+          stiffness: 400,
+          damping: 40,
+          duration: 0.1,
+        }}
+      >
+        {children}
+      </motion.div>
+    </motion.div>
+  );
+};
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-6">
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              href={item.path}
-              className={`text-sm font-medium transition-colors hover:text-rose ${
-                pathname === item.path ? "text-orange" : "text-gray-600"
-              }`}
-            >
-              {item.name}
-            </Link>
-          ))}
-        </nav>
+const NavBody = ({ children, className }: NavBodyProps) => {
+  const [isScrolled, setIsScrolled] = useState(false);
 
-        <div className="flex items-center gap-4">
-          <Link
-            href="https://github.com/yashs33244/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-gray-600 hover:text-azure transition-colors"
-          >
-            <Github className="h-5 w-5" />
-            <span className="sr-only">GitHub</span>
-          </Link>
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
 
-          <Link
-            href="https://leetcode.com/u/yashs33244/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-gray-600 hover:text-amber transition-colors"
-          >
-            <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
-              <path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0zm-2.866 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z" />
-            </svg>
-            <span className="sr-only">Leetcode</span>
-          </Link>
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
-          <Link
-            href="https://codeforces.com/profile/yashs33244"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-gray-600 hover:text-rose transition-colors"
-          >
-            <Code2 className="h-5 w-5" />
-            <span className="sr-only">Codeforces</span>
-          </Link>
+  return (
+    <motion.div
+      className={cn(
+        "relative z-[60] flex flex-row items-center justify-between rounded-full transition-shadow duration-300 w-full",
+        isScrolled ? "shadow-lg" : "",
+        "backdrop-blur-md bg-figma-menu/80 border border-white/20 px-6 py-3",
+        className
+      )}
+    >
+      {children}
+    </motion.div>
+  );
+};
 
-          <ModeToggle />
+const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
+  const [hovered, setHovered] = useState<number | null>(null);
 
-          {/* Mobile Menu Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <Menu className="h-5 w-5" />
+  return (
+    <motion.div
+      onMouseLeave={() => setHovered(null)}
+      className={cn(
+        "flex flex-row items-center justify-center space-x-1 text-sm font-medium",
+        className
+      )}
+    >
+      {items.map((item, idx) => (
+        <Link
+          key={`link-${idx}`}
+          href={item.link}
+          onMouseEnter={() => setHovered(idx)}
+          onClick={(e) => onItemClick && onItemClick(e, item.link)}
+          className="relative px-3 py-2 text-white/80 hover:text-white transition-colors font-poppins"
+        >
+          {hovered === idx && (
+            <motion.div
+              layoutId="hovered"
+              className="absolute inset-0 h-full w-full rounded-full bg-transparent border border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.3)]"
+              transition={{
+                type: "spring",
+                stiffness: 300,
+                damping: 100,
+              }}
+            />
+          )}
+          <span
+            className={cn(
+              "relative z-20",
+              hovered === idx ? "text-white font-medium" : "text-white"
             )}
-          </Button>
-        </div>
-      </div>
+          >
+            {item.name}
+          </span>
+        </Link>
+      ))}
+    </motion.div>
+  );
+};
 
-      {/* Mobile Navigation */}
-      {isMenuOpen && (
-        <div className="md:hidden border-t">
-          <nav className="container py-4 flex flex-col gap-4">
-            {navItems.map((item) => (
+const MobileNav = ({ children, className }: MobileNavProps) => {
+  return (
+    <motion.div
+      className={cn(
+        "relative z-50 flex flex-col items-center justify-between py-3 px-4 lg:hidden rounded-full backdrop-blur-md bg-figma-menu/80 border border-white/20 shadow-md w-full max-w-sm mx-auto mt-6",
+        className
+      )}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+const MobileNavHeader = ({ children, className }: MobileNavHeaderProps) => {
+  return (
+    <div
+      className={cn(
+        "flex w-full flex-row items-center justify-between",
+        className
+      )}
+    >
+      {children}
+    </div>
+  );
+};
+
+const MobileNavMenu = ({
+  children,
+  className,
+  isOpen,
+  onClose,
+}: MobileNavMenuProps) => {
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{
+            duration: 0.1,
+            ease: "easeInOut",
+          }}
+          className={cn(
+            "absolute inset-x-0 mx-auto top-16 z-50 flex w-full flex-col items-start justify-start gap-4 rounded-lg backdrop-blur-md bg-figma-menu/90 border border-white/20 px-4 py-8 shadow-md",
+            className
+          )}
+          style={{ width: "100%" }}
+        >
+          {children}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
+const MobileNavToggle = ({
+  isOpen,
+  onClick,
+}: {
+  isOpen: boolean;
+  onClick: () => void;
+}) => {
+  return isOpen ? (
+    <IconX
+      className="text-white w-6 h-6 cursor-pointer hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] transition-all duration-300"
+      onClick={onClick}
+    />
+  ) : (
+    <IconMenu2
+      className="text-white w-6 h-6 cursor-pointer hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] transition-all duration-300"
+      onClick={onClick}
+    />
+  );
+};
+
+export default function Navbar() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const handleItemClick = () => {
+    setIsMobileMenuOpen(false);
+  };
+
+  return (
+    <>
+      {/* Desktop Navbar */}
+      <NavbarWrapper className="hidden lg:flex">
+        <NavBody>
+          {/* Logo */}
+          <Link
+            href="/"
+            className="flex items-center space-x-3 font-normal text-white hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.6)] transition-all duration-300"
+          >
+            <span className="font-bold text-white font-poppins text-lg">
+              itsyash
+            </span>
+          </Link>
+
+          {/* Navigation Items - Centered */}
+          <div className="flex-1 flex justify-center">
+            <NavItems items={navItems} onItemClick={handleItemClick} />
+          </div>
+
+          {/* Hire Me Button */}
+          <Button
+            asChild
+            className="bg-figma-gradient hover:bg-figma-gradient/90 text-black font-medium px-6 py-2 rounded-full transition-all duration-300 hover:scale-105 font-poppins hover:shadow-[0_0_20px_rgba(255,255,255,0.4)]"
+          >
+            <Link href="/contact">Hire me</Link>
+          </Button>
+        </NavBody>
+      </NavbarWrapper>
+
+      {/* Mobile Navbar */}
+      <MobileNav className="lg:hidden">
+        <MobileNavHeader>
+          {/* Mobile Logo */}
+          <Link
+            href="/"
+            className="flex items-center space-x-2 font-normal text-white hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.6)] transition-all duration-300"
+          >
+            <span className="font-bold text-white font-poppins">itsyash</span>
+          </Link>
+
+          {/* Mobile Menu Toggle */}
+          <MobileNavToggle
+            isOpen={isMobileMenuOpen}
+            onClick={toggleMobileMenu}
+          />
+        </MobileNavHeader>
+
+        {/* Mobile Menu */}
+        <MobileNavMenu
+          isOpen={isMobileMenuOpen}
+          onClose={() => setIsMobileMenuOpen(false)}
+        >
+          <div className="flex flex-col space-y-4 w-full">
+            {navItems.map((item, idx) => (
               <Link
-                key={item.path}
-                href={item.path}
-                className={`text-sm font-medium transition-colors hover:text-rose ${
-                  pathname === item.path ? "text-orange" : "text-gray-600"
-                }`}
+                key={idx}
+                href={item.link}
+                onClick={handleItemClick}
+                className="text-white/80 hover:text-white transition-all duration-300 px-4 py-2 rounded-lg hover:bg-figma-gradient font-poppins hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
               >
                 {item.name}
               </Link>
             ))}
-          </nav>
-        </div>
-      )}
-    </header>
+            <Button
+              asChild
+              className="bg-figma-gradient hover:bg-figma-gradient/90 text-black font-medium px-6 py-3 rounded-full transition-all duration-300 w-full font-poppins hover:shadow-[0_0_20px_rgba(255,255,255,0.4)]"
+            >
+              <Link href="/contact">Hire me</Link>
+            </Button>
+          </div>
+        </MobileNavMenu>
+      </MobileNav>
+    </>
   );
 }

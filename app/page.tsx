@@ -1,20 +1,27 @@
 import Hero from "@/components/hero";
 import About from "@/components/about-brief";
+import ProcessSection from "@/components/process-section";
 import FeaturedProjects from "@/components/featured-projects";
-import Skills from "@/components/skills-overview";
-import GithubStats from "@/components/github-stats";
-import CodingProfiles from "@/components/coding-profiles";
+import Testimonials from "@/components/testimonials";
+import BuyMeCoffee from "@/components/buy-me-coffee";
 import CallToAction from "@/components/call-to-action";
 
 export default function Home() {
   return (
-    <div className="container mx-auto px-4">
-      <Hero />
-      <About />
-      <FeaturedProjects />
-      <Skills />
-      <GithubStats />
-      <CallToAction />
+    <div className="bg-figma-dark min-h-screen">
+      {/* Grid background overlay */}
+      <div className="figma-grid fixed inset-0 pointer-events-none opacity-30" />
+
+      {/* Main content */}
+      <div className="relative z-10">
+        <Hero />
+        <About />
+        <ProcessSection />
+        <FeaturedProjects />
+        <Testimonials />
+        <BuyMeCoffee />
+        <CallToAction />
+      </div>
     </div>
   );
 }

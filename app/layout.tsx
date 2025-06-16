@@ -1,12 +1,9 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { Providers } from "./providers";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Yash Singh | Fullstack Developer & Software Engineer",
@@ -20,18 +17,25 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className="dark">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body
         className={cn(
-          inter.className,
-          "min-h-screen bg-background antialiased"
+          "min-h-screen bg-figma-dark text-white font-poppins antialiased"
         )}
         suppressHydrationWarning
       >
         <Providers>
-          <div className="relative flex min-h-screen flex-col">
+          <div className="relative flex min-h-screen flex-col bg-figma-dark">
             <Navbar />
-            <main className="flex-1">{children}</main>
+            <main className="flex-1 pt-[120px] md:pt-[100px]">{children}</main>
             <Footer />
           </div>
         </Providers>

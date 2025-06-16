@@ -38,3 +38,20 @@ model Category {
   slug  String @unique
   posts Post[] @relation("PostToCategory")
 }
+
+// Project model for portfolio projects
+model Project {
+  id           String   @id @default(cuid())
+  title        String
+  slug         String   @unique
+  description  String   @db.Text
+  coverImage   String?
+  liveLink     String?
+  githubLink   String
+  demoLink     String?
+  technologies String[] // Array of technology names
+  featured     Boolean  @default(false)
+  published    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

@@ -8,9 +8,11 @@ export function BlogListing({ posts, pagination }: BlogListingProps) {
   // Safety check to ensure posts is an array
   if (!posts || !Array.isArray(posts) || posts.length === 0) {
     return (
-      <div className="flex min-h-[200px] flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
-        <h3 className="text-lg font-medium">No blog posts found</h3>
-        <p className="text-muted-foreground">
+      <div className="flex min-h-[200px] flex-col items-center justify-center rounded-lg border border-white/20 bg-figma-menu p-8 text-center">
+        <h3 className="text-lg font-medium text-white font-poppins">
+          No blog posts found
+        </h3>
+        <p className="text-white/70 font-poppins">
           Check back later for new content.
         </p>
       </div>
@@ -32,6 +34,7 @@ export function BlogListing({ posts, pagination }: BlogListingProps) {
             size="sm"
             asChild
             disabled={pagination.page <= 1}
+            className="bg-figma-menu border-white/20 text-white hover:bg-white/10 hover:border-figma-purple/50"
           >
             <Link
               href={`/blog?page=${pagination.page - 1}`}
@@ -40,7 +43,7 @@ export function BlogListing({ posts, pagination }: BlogListingProps) {
               <ChevronLeft className="h-4 w-4" />
             </Link>
           </Button>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm text-white/70 font-poppins">
             Page {pagination.page} of {pagination.pages}
           </span>
           <Button
@@ -48,6 +51,7 @@ export function BlogListing({ posts, pagination }: BlogListingProps) {
             size="sm"
             asChild
             disabled={pagination.page >= pagination.pages}
+            className="bg-figma-menu border-white/20 text-white hover:bg-white/10 hover:border-figma-purple/50"
           >
             <Link
               href={`/blog?page=${pagination.page + 1}`}

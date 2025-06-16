@@ -16,14 +16,14 @@ import { formatDate } from "@/lib/utils";
 import Script from "next/script";
 
 interface BlogPostPageProps {
-  params: any;
+  params: Promise<{ slug: string }>;
 }
 
 // Generate metadata for the blog post
 export async function generateMetadata({
   params,
 }: BlogPostPageProps): Promise<Metadata> {
-  const slug = params.slug;
+  const { slug } = await params;
   const post = await getPost(slug);
 
   if (!post) {
@@ -89,7 +89,7 @@ async function getPost(slug: string) {
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
-  const slug = params.slug;
+  const { slug } = await params;
   const post = await getPost(slug);
 
   if (!post || (!post.published && process.env.NODE_ENV === "production")) {
@@ -120,7 +120,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         strategy="beforeInteractive"
       />
 
-      <article className="container py-6 prose prose-amber dark:prose-invert mx-auto">
+      <div className="bg-figma-dark min-h-screen">
         <BlogHeader
           title={post.title}
           date={formatDate(post.createdAt)}
@@ -130,10 +130,14 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           readingTime={post.readingTime || 5}
           slug={post.slug}
         />
-        <Suspense fallback={<div>Loading content...</div>}>
-          <Mdx code={post.content} />
-        </Suspense>
-      </article>
+        <div className="container mx-auto max-w-4xl">
+          <Suspense
+            fallback={<div className="text-white p-8">Loading content...</div>}
+          >
+            <Mdx code={post.content} />
+          </Suspense>
+        </div>
+      </div>
     </BlogLayout>
   );
 }

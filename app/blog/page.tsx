@@ -1,7 +1,12 @@
 import { Metadata } from "next";
 import { Suspense } from "react";
 import { BlogListing } from "@/components/blog-listing";
+import { Loader } from "@/components/ui/loader";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { PenTool, Rss, Search } from "lucide-react";
 import prisma from "@/lib/prisma";
+import { GridOverlay } from "@/components/ui/grid-overlay";
 
 export const metadata: Metadata = {
   title: "Blog | Tanish Singh",
@@ -67,49 +72,102 @@ export default async function BlogPage({ searchParams }: any) {
     }
 
     return (
-      <main className="container py-12">
-        <div className="mb-12 text-center">
-          <h1 className="mb-4 text-4xl font-bold tracking-tight">Blog</h1>
-          <p className="mx-auto max-w-[700px] text-lg text-muted-foreground">
-            Thoughts, ideas, and insights on software development, technology,
-            and more.
-          </p>
-        </div>
+      <div className="min-h-screen bg-figma-dark">
+        {/* Hero Section */}
+        <section className="relative py-20 overflow-hidden">
+          <GridOverlay />
 
-        <BlogListing
-          posts={posts}
-          pagination={{
-            total: totalPosts,
-            pages: Math.ceil(totalPosts / limit),
-            page,
-            limit,
-          }}
-        />
-      </main>
+          <div className="figma-container relative z-10">
+            <div className="text-center max-w-4xl mx-auto">
+              <h1 className="text-[60px] md:text-[80px] lg:text-[100px] font-bold leading-[0.9] text-white font-poppins mb-6">
+                My{" "}
+                <span className="text-figma-gradient bg-clip-text text-transparent">
+                  Blogs
+                </span>
+              </h1>
+
+              <p className="text-xl md:text-2xl font-normal leading-[32px] text-white/80 font-poppins mb-12 max-w-[600px] mx-auto">
+                Thoughts, ideas, and insights on software development,
+                technology, and more.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Blog Listing */}
+        <main className="py-16">
+          <div className="figma-container">
+            <Suspense
+              fallback={
+                <div className="flex justify-center py-16">
+                  <Loader text="Loading articles..." size="lg" />
+                </div>
+              }
+            >
+              <BlogListing
+                posts={posts}
+                pagination={{
+                  total: totalPosts,
+                  pages: Math.ceil(totalPosts / limit),
+                  page,
+                  limit,
+                }}
+              />
+            </Suspense>
+          </div>
+        </main>
+      </div>
     );
   } catch (error) {
     console.error("Error fetching blog posts:", error);
     return (
-      <main className="container py-12">
-        <div className="mb-12 text-center">
-          <h1 className="mb-4 text-4xl font-bold tracking-tight">Blogs</h1>
-          <p className="mx-auto max-w-[700px] text-lg text-muted-foreground">
-            Thoughts, ideas, and insights on software development, technology,
-            and more.
-          </p>
-        </div>
-        <div className="rounded-lg border p-8 text-center">
-          <h2 className="text-lg font-medium text-destructive">
-            Error loading blog posts
-          </h2>
-          <p className="text-muted-foreground mt-2">
-            Sorry, we couldn't load the blog posts. Please try again later.
-          </p>
-          <pre className="mt-4 text-xs text-left bg-gray-100 p-4 rounded overflow-auto">
-            {String(error)}
-          </pre>
-        </div>
-      </main>
+      <div className="min-h-screen bg-figma-dark">
+        {/* Hero Section */}
+        <section className="relative py-20 overflow-hidden">
+          <div className="figma-container">
+            <div className="text-center max-w-4xl mx-auto">
+              <h1 className="text-[60px] md:text-[80px] lg:text-[100px] font-bold leading-[0.9] text-white font-poppins mb-6">
+                My{" "}
+                <span className="text-figma-gradient bg-clip-text text-transparent">
+                  Blog
+                </span>
+              </h1>
+              <p className="text-xl md:text-2xl font-normal leading-[32px] text-white/80 font-poppins mb-12 max-w-[600px] mx-auto">
+                Thoughts, ideas, and insights on software development,
+                technology, and more.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Error State */}
+        <main className="py-16">
+          <div className="figma-container">
+            <div className="bg-figma-menu border border-white/10 rounded-lg p-12 text-center">
+              <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Search className="w-8 h-8 text-red-400" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-4">
+                Error Loading Articles
+              </h2>
+              <p className="text-white/70 mb-8 max-w-2xl mx-auto">
+                Sorry, we couldn't load the blog posts. Please try again later.
+              </p>
+              <div className="bg-figma-dark rounded-lg p-4 text-left mb-8 max-w-2xl mx-auto">
+                <pre className="text-xs text-red-400 overflow-auto">
+                  {String(error)}
+                </pre>
+              </div>
+              <Button
+                asChild
+                className="bg-figma-gradient hover:bg-figma-gradient/90 text-black font-medium"
+              >
+                <Link href="/">Back to Home</Link>
+              </Button>
+            </div>
+          </div>
+        </main>
+      </div>
     );
   }
 }
