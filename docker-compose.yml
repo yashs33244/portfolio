@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: yashs3324/portfolio:latest
+    image: yashs3324/new_portfolio:latest
     restart: always
     ports:
       - "3004:3000"

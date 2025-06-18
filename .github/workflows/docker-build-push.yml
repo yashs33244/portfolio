@@ -40,20 +40,20 @@ jobs:
           if [[ $GITHUB_REF == refs/tags/* ]]; then
             VERSION=${GITHUB_REF#refs/tags/}
             echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-            echo "TAGS=${{ secrets.DOCKERHUB_USERNAME }}/portfolio:$VERSION,${{ secrets.DOCKERHUB_USERNAME }}/portfolio:latest" >> $GITHUB_OUTPUT
+            echo "TAGS=${{ secrets.DOCKERHUB_USERNAME }}/new_portfolio:$VERSION,${{ secrets.DOCKERHUB_USERNAME }}/new_portfolio:latest" >> $GITHUB_OUTPUT
           elif [[ $GITHUB_REF == refs/heads/main ]]; then
             echo "VERSION=latest" >> $GITHUB_OUTPUT
-            echo "TAGS=${{ secrets.DOCKERHUB_USERNAME }}/portfolio:latest" >> $GITHUB_OUTPUT
+            echo "TAGS=${{ secrets.DOCKERHUB_USERNAME }}/new_portfolio:latest" >> $GITHUB_OUTPUT
           else
             BRANCH_NAME=${GITHUB_REF#refs/heads/}
             echo "VERSION=$BRANCH_NAME" >> $GITHUB_OUTPUT
-            echo "TAGS=${{ secrets.DOCKERHUB_USERNAME }}/portfolio:$BRANCH_NAME" >> $GITHUB_OUTPUT
+            echo "TAGS=${{ secrets.DOCKERHUB_USERNAME }}/new_portfolio:$BRANCH_NAME" >> $GITHUB_OUTPUT
           fi
 
       - name: Build Docker image
         run: |
           docker build \
-            --tag ${{ secrets.DOCKERHUB_USERNAME }}/portfolio:${{ steps.meta.outputs.VERSION }} \
+            --tag ${{ secrets.DOCKERHUB_USERNAME }}/new_portfolio:${{ steps.meta.outputs.VERSION }} \
             --file Dockerfile \
             .
 
@@ -61,21 +61,21 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main'
         run: |
           if [[ "${{ steps.meta.outputs.VERSION }}" != "latest" ]]; then
-            docker tag ${{ secrets.DOCKERHUB_USERNAME }}/portfolio:${{ steps.meta.outputs.VERSION }} ${{ secrets.DOCKERHUB_USERNAME }}/portfolio:latest
+            docker tag ${{ secrets.DOCKERHUB_USERNAME }}/new_portfolio:${{ steps.meta.outputs.VERSION }} ${{ secrets.DOCKERHUB_USERNAME }}/new_portfolio:latest
           fi
 
       - name: Push Docker image
         run: |
           # Push the specific version
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/portfolio:${{ steps.meta.outputs.VERSION }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/new_portfolio:${{ steps.meta.outputs.VERSION }}
 
           # Push latest tag if this is main branch or a tag
           if [[ "${{ github.ref }}" == "refs/heads/main" ]] || [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            docker push ${{ secrets.DOCKERHUB_USERNAME }}/portfolio:latest
+            docker push ${{ secrets.DOCKERHUB_USERNAME }}/new_portfolio:latest
           fi
 
       - name: Image digest
         run: |
           echo "Image pushed successfully!"
           echo "Tags: ${{ steps.meta.outputs.TAGS }}"
-          docker images ${{ secrets.DOCKERHUB_USERNAME }}/portfolio
+          docker images ${{ secrets.DOCKERHUB_USERNAME }}/new_portfolio
