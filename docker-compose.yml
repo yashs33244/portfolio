@@ -1,13 +1,13 @@
-version: '3.8'
+version: "3.8"
 
 services:
   web:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     restart: always
     ports:
-      - "3000:3000"
+      - "3004:3000"
     environment:
       - DATABASE_URL=postgresql://postgres:mysecretpassword@db:5432/demo_website?schema=public
       - NODE_ENV=production
@@ -36,4 +36,4 @@ volumes:
 
 networks:
   app-network:
-    driver: bridge 
+    driver: bridge
