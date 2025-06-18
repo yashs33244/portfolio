@@ -23,7 +23,6 @@ import {
   QueryClientProvider,
   useQuery,
 } from "@tanstack/react-query";
-import { githubAPI } from "@/lib/platform-api";
 
 // Experience data type
 interface Experience {
@@ -94,7 +93,7 @@ const experienceData: Experience[] = [
       "Three.js",
       "AWS",
     ],
-    companyUrl: "https://viewr.tech",
+    companyUrl: "https://viewr.in",
     teamSize: "5-10",
   },
   {
@@ -109,42 +108,46 @@ const experienceData: Experience[] = [
     description:
       "Co-founded and led technical development of FinalCV, an AI-powered resume optimization platform helping job seekers create compelling resumes.",
     achievements: [
-      "Developed AI-powered resume analysis engine with 95% accuracy",
+      "Developed AI-powered resume analysis engine",
       "Scaled platform to serve 5000+ users across multiple countries",
       "Built comprehensive analytics dashboard for user insights",
-      "Secured partnerships with major job placement agencies",
     ],
     technologies: [
       "Next.js",
       "Python",
-      "FastAPI",
-      "MongoDB",
+      "Node.js",
+      "PostgreSQL",
       "OpenAI API",
-      "Stripe",
-      "Vercel",
+      "Razorpay",
+      "AWS",
     ],
-    companyUrl: "https://finalcv.com",
+    companyUrl: "https://finalcv.itsyash.space",
     teamSize: "3-5",
   },
   {
     id: "3",
-    title: "Software Development Intern",
-    company: "TechCorp Solutions",
+    title: "Research Intern",
+    company: "IIT Mandi",
     type: "internship",
-    location: "Bangalore, India",
-    startDate: "2022-01",
-    endDate: "2022-06",
+    location: "IIT Mandi, India",
+    startDate: "2024-05",
+    endDate: "2024-08",
     current: false,
     description:
       "Contributed to large-scale web applications and gained hands-on experience with modern development practices and agile methodologies.",
     achievements: [
-      "Implemented 15+ user-facing features with React and Node.js",
-      "Reduced API response times by 30% through optimization",
-      "Collaborated with senior developers on code reviews",
-      "Participated in daily standups and sprint planning",
+      "Formulated a continuous authentication system for a banking app, enhancing security by 12% from 9%.",
+      "Spearheaded research on olfaction of compounds with Graph Neural Networks, delivering a 3% accuracy gain.",
+      "Optimized Transformer models to facilitate NLP tasks, yielding a 5% performance boost.",
     ],
-    technologies: ["React", "Node.js", "MySQL", "Docker", "Jenkins", "AWS"],
-    teamSize: "10-15",
+    technologies: [
+      "Python",
+      "PyTorch",
+      "Graph Neural Networks",
+      "Transformer Models",
+      "NLP",
+    ],
+    teamSize: "4-5",
   },
 ];
 

@@ -1,44 +1,44 @@
-import { Project, Experience, Post } from "./types";
+import { Project, Experience, Education, Post } from "./types";
 
 export const projects: Project[] = [
   {
     id: 1,
-    title: "Mystic Wallet",
-    description: "Dual-mode wallet with facial authentication, HD wallet architecture for Ethereum and Solana, Telegram bot notification system, and voice-guided procedures. This project secured 4th place among 50 teams in a competition with participants from 20 colleges across India.",
+    title: "Mystic Vault",
+    description: "Engineered dual-mode wallet with biometric auth, reducing unauthorized access by 70% and tripling security rating. Implemented HD wallet architecture on Ethereum/Solana, boosting cross-chain adoption by 40%. Automated threat alerts via Telegram API, accelerating response time by 85%. Coded voice-guided interface with Google TTS, cutting operation errors by 65% and doubling UX scores.",
     image: "/images/mystic wallet.png",
-    tags: ["Blockchain", "Web3", "React", "Node.js"],
+    tags: ["Next.js", "AWS", "Docker", "Raspberry Pi", "PostgreSQL", "Prisma", "Solana/Web3.js", "OpenCV"],
     github: "https://github.com/yashs33244/hack-the-hills",
     demo: "https://wallet.yashprojects.online",
     featured: true,
   },
   {
     id: 2,
+    title: "Resume Builder",
+    description: "Launched responsive Next.js/TypeScript resume builder, raising retention by 25% and cutting bounce rate by 30%. Designed ATS-optimized templates with industry experts, boosting interview callbacks by 40%. Configured AWS load-balanced infrastructure, achieving 99.9% uptime for 1k+ monthly users. Delivered 90% satisfaction via A/B-tested UI/UX enhancements.",
+    image: "/images/final_cv.png",
+    tags: ["TypeScript", "Prisma", "PostgreSQL", "Docker", "Turborepo", "Recoil", "Gemini API"],
+    github: "https://github.com/yashs33244/resume-build",
+    demo: "https://finalcv.yashprojects.online",
+    featured: true,
+  },
+  {
+    id: 3,
+    title: "Paytm Payment Simulation",
+    description: "Built real-time payment system with WebHooks, slashing confirmation time by 40% and lifting conversions by 15%. Optimized Prisma/MongoDB queries, improving retrieval speed by 35% under peak load. Containerized with Docker and deployed via CI/CD, reducing onboarding time by 60% and eliminating deployment failures.",
+    image: "/images/system_design.png",
+    tags: ["WebHooks", "Next.js", "Docker", "MongoDB", "Prisma", "next-auth", "CI/CD", "AWS"],
+    github: "https://github.com/yashs33244/paytm_project/",
+    demo: "#",
+    featured: true,
+  },
+  {
+    id: 4,
     title: "Artist Compare",
     description: "A platform where users can compare artists across various metrics including net worth, earnings, global influence, awards, collaborations, genre impact, commercial success, and longevity.",
     image: "/images/artist_compare.png",
     tags: ["Next.js", "TypeScript", "Data Visualization", "API Integration"],
     github: "https://github.com/yashs33244/artist-compare",
     demo: "https://compare.yashprojects.online",
-    featured: true,
-  },
-  {
-    id: 3,
-    title: "Resume Builder",
-    description: "Responsive builder with Next.js and TypeScript, ATS-friendly templates co-designed with industry professionals, AWS hosting with 99.9% uptime, and 90% user satisfaction rate.",
-    image: "/images/final_cv.png",
-    tags: ["Next.js", "TypeScript", "AWS", "Tailwind CSS"],
-    github: "https://github.com/yashs33244/resume-build",
-    demo: "https://finalcv.yashprojects.online",
-    featured: true,
-  },
-  {
-    id: 4,
-    title: "Paytm Payment Simulation",
-    description: "Real-time payment processing with WebHooks, streamlined database queries with Prisma ORM, and Docker containerization.",
-    image: "/images/system_design.png",
-    tags: ["Express", "Node.js", "Docker", "Prisma"],
-    github: "https://github.com/yashs33244/paytm_project/",
-    demo: "#",
   },
   {
     id: 5,
@@ -63,33 +63,46 @@ export const projects: Project[] = [
 export const experiences: Experience[] = [
   {
     id: 1,
-    role: "Intern",
-    company: "ViewR (IIT Delhi startup)",
+    role: "Software Engineering Intern",
+    company: "ViewR",
     startDate: "Jan 2025",
     endDate: "March 2025",
-    description: "Working on cloud infrastructure and microservices deployment for a cutting-edge AR/VR platform.",
+    description: "Architecting AWS cloud infrastructure and Kubernetes CI/CD pipelines for scalable applications.",
     responsibilities: [
-      "AWS cloud infrastructure with multi-region deployment",
-      "Kubernetes CI/CD pipelines development",
-      "Scalable backend engineering with rate limiting",
-      "Microservices deployment with Helm charts"
+      "Architected AWS cloud infrastructure as code across multi-region deployments, governing all resources and core infra, guaranteeing 99.95% availability",
+      "Streamlined Kubernetes CI/CD pipelines for 10 applications in a unified repo, slashing deploy time by 65% and elevating success rates to 85%",
+      "Developed scalable backend with rate limiting, processing 200 requests/second and incorporating custom models in TypeScript/Express.js",
+      "Launched open-source & custom AI models via Helm on Kubernetes, decreasing API latency to 2 ms, maintaining HA with persistent storage, and documenting full infra code"
     ],
-    technologies: ["AWS", "Kubernetes", "Docker", "CI/CD", "Helm", "Node.js", "TypeScript"]
+    technologies: ["TypeScript", "React", "Docker", "Prisma", "PostgreSQL", "Kubernetes", "AWS", "Helm", "Express.js"]
   },
   {
     id: 2,
-    role: "Research Assistant",
+    role: "Research Assistant (Intern)",
     company: "IIT Mandi",
     startDate: "May 2024",
     endDate: "Sept 2024",
-    description: "Conducted research on continuous authentication systems and compound olfaction using Graph Neural Networks.",
+    description: "Conducted advanced research on continuous authentication systems and compound olfaction using Graph Neural Networks.",
     responsibilities: [
-      "Continuous authentication system for banking apps",
-      "Research on compound olfaction using GNNs",
-      "MPNN enhancement for compound analysis",
-      "Transformer model refinement for NLP tasks"
+      "Formulated a continuous authentication system for a banking app, enhancing security by 12% from 9%",
+      "Spearheaded research on olfaction of compounds with Graph Neural Networks, delivering a 3% accuracy gain",
+      "Optimized Transformer models to facilitate NLP tasks, yielding a 5% performance boost"
     ],
-    technologies: ["Python", "PyTorch", "GNN", "NLP", "Machine Learning", "Research"]
+    technologies: ["Python", "Keras", "Numpy", "Pandas", "Seaborn", "Graph Neural Networks", "Transformer Models", "NLP"]
+  }
+];
+
+export const education: Education[] = [
+  {
+    id: 1,
+    degree: "Bachelor of Technology",
+    field: "Computer Science and Engineering",
+    institution: "Indian Institute of Information Technology Una",
+    location: "Himachal Pradesh, India",
+    startDate: "Oct 2022",
+    endDate: "July 2026",
+    gpa: "8.3/10.0",
+    description: "Pursuing Bachelor of Technology in Computer Science and Engineering with focus on software development, machine learning, and cloud technologies."
   }
 ];
 

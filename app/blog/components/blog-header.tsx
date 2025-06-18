@@ -69,7 +69,7 @@ export function BlogHeader({
               >
                 <Badge
                   variant="outline"
-                  className="border-figma-gradient text-figma-gradient hover:bg-figma-gradient/10 bg-transparent"
+                  className="border-figma-gradient text-black hover:bg-figma-gradient/10 bg-transparent"
                 >
                   {category.name}
                 </Badge>

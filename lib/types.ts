@@ -20,6 +20,18 @@ export interface Experience {
   technologies: string[]
 }
 
+export interface Education {
+  id: number
+  degree: string
+  field: string
+  institution: string
+  location: string
+  startDate: string
+  endDate: string
+  gpa?: string
+  description?: string
+}
+
 export interface Post {
   slug: string
   title: string
