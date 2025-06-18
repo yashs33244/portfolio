@@ -5,7 +5,7 @@ import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
 
 interface CategoryPageProps {
-  params: any;
+  params: Promise<{ slug: string }>;
   searchParams: Promise<{
     page?: string;
   }>;
@@ -15,8 +15,10 @@ interface CategoryPageProps {
 export async function generateMetadata({
   params,
 }: CategoryPageProps): Promise<Metadata> {
+  const { slug } = await params;
+
   const category = await prisma.category.findUnique({
-    where: { slug: params.slug },
+    where: { slug },
   });
 
   if (!category) {
@@ -36,7 +38,7 @@ export default async function CategoryPage({
   params,
   searchParams,
 }: CategoryPageProps) {
-  const slug = params.slug;
+  const { slug } = await params;
   // Await the searchParams before accessing its properties
   const searchParamsData = await searchParams;
   const page = Number(searchParamsData.page) || 1;

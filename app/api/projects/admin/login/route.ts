@@ -1,44 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
-// POST /api/projects/admin/login
+const ADMIN_CREDENTIALS = {
+  email: 'yashs3324@gmail.com',
+  password: 'Ironman@123#'
+};
+
 export async function POST(req: NextRequest) {
   try {
     const { email, password } = await req.json();
-
-    // Check credentials against environment variables
-    const adminEmail = process.env.ADMIN_EMAIL;
-    const adminPassword = process.env.ADMIN_PASSWORD;
-
-    if (!adminEmail || !adminPassword) {
-      return NextResponse.json(
-        { error: 'Admin credentials not configured' },
-        { status: 500 }
-      );
-    }
-
-    if (email !== adminEmail || password !== adminPassword) {
+    
+    // Check credentials
+    if (email === ADMIN_CREDENTIALS.email && password === ADMIN_CREDENTIALS.password) {
+      // Set authentication cookie
+      const response = NextResponse.json({ success: true, message: 'Logged in successfully' });
+      response.cookies.set('project_admin_auth', 'true', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        path: '/'
+      });
+      
+      return response;
+    } else {
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
       );
     }
-
-    // Set authentication cookie
-    const response = NextResponse.json(
-      { message: 'Login successful' },
-      { status: 200 }
-    );
-
-    const cookieStore = await cookies();
-    cookieStore.set('project-admin-auth', 'authenticated', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 24 * 60 * 60, // 24 hours
-    });
-
-    return response;
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json(
@@ -48,23 +37,15 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// DELETE /api/projects/admin/login (logout)
-export async function DELETE(req: NextRequest) {
-  try {
-    const response = NextResponse.json(
-      { message: 'Logout successful' },
-      { status: 200 }
-    );
-
-    const cookieStore = await cookies();
-    cookieStore.delete('project-admin-auth');
-
-    return response;
-  } catch (error) {
-    console.error('Logout error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
+export async function DELETE() {
+  // Logout - clear the cookie
+  const response = NextResponse.json({ success: true, message: 'Logged out successfully' });
+  response.cookies.set('project_admin_auth', '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    expires: new Date(0),
+    path: '/'
+  });
+  
+  return response;
 } 

@@ -36,14 +36,14 @@ export default function Hero() {
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
           {/* Vertical lines - dynamic spacing based on viewport */}
-          {Array.from({ length: 7 }, (_, i) => (
+          {Array.from({ length: 6 }, (_, i) => (
             <div
               key={`vertical-${i}`}
               className={`absolute w-px bg-white transition-opacity duration-1000 ${
                 mounted ? "opacity-20" : "opacity-0"
               }`}
               style={{
-                left: `${-840 + i * 240}px`,
+                left: `${-600 + i * 240}px`,
                 top: `-400px`,
                 height: `800px`,
                 transitionDelay: `${i * 100}ms`,

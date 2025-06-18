@@ -198,26 +198,76 @@ export function Mdx({ code }: MdxProps) {
         }
 
         /* Custom syntax highlighter overrides */
-        .mdx pre[class*="language-"] {
-          margin: 1.5rem 0 !important;
-          border-radius: 0.5rem !important;
-          border: 1px solid #374151 !important;
-        }
-
-        .mdx .code-title {
-          background: #374151;
-          color: #ffffff;
-          padding: 0.5rem 1rem;
-          font-size: 0.875rem;
-          font-weight: 500;
-          border-radius: 0.5rem 0.5rem 0 0;
-          margin-bottom: 0;
+        .mdx pre {
+          background: #0f172a !important;
+          border: 1px solid #374151;
+          border-radius: 0.5rem;
+          margin: 1.5rem 0;
+          overflow-x: auto;
           font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
         }
 
-        .mdx .code-title + pre {
-          margin-top: 0 !important;
-          border-radius: 0 0 0.5rem 0.5rem !important;
+        .mdx pre code {
+          background: transparent !important;
+          padding: 0 !important;
+          font-size: 0.875rem;
+          line-height: 1.7;
+        }
+
+        /* Force dark theme for syntax highlighter */
+        .mdx .token.comment,
+        .mdx .token.prolog,
+        .mdx .token.doctype,
+        .mdx .token.cdata {
+          color: #6b7280;
+        }
+
+        .mdx .token.punctuation {
+          color: #d1d5db;
+        }
+
+        .mdx .token.property,
+        .mdx .token.tag,
+        .mdx .token.boolean,
+        .mdx .token.number,
+        .mdx .token.constant,
+        .mdx .token.symbol,
+        .mdx .token.deleted {
+          color: #f87171;
+        }
+
+        .mdx .token.selector,
+        .mdx .token.attr-name,
+        .mdx .token.string,
+        .mdx .token.char,
+        .mdx .token.builtin,
+        .mdx .token.inserted {
+          color: #34d399;
+        }
+
+        .mdx .token.operator,
+        .mdx .token.entity,
+        .mdx .token.url,
+        .mdx .language-css .token.string,
+        .mdx .style .token.string {
+          color: #fbbf24;
+        }
+
+        .mdx .token.atrule,
+        .mdx .token.attr-value,
+        .mdx .token.keyword {
+          color: #8b5cf6;
+        }
+
+        .mdx .token.function,
+        .mdx .token.class-name {
+          color: #60a5fa;
+        }
+
+        .mdx .token.regex,
+        .mdx .token.important,
+        .mdx .token.variable {
+          color: #f59e0b;
         }
       `}</style>
 
@@ -304,12 +354,15 @@ export function Mdx({ code }: MdxProps) {
           img: ({ src, alt, title }) => {
             if (!src) return null;
 
+            // Ensure src is a string
+            const srcString = typeof src === "string" ? src : "";
+
             // Handle video files
-            if (src.match(/\.(mp4|webm|ogg|mov)$/i)) {
+            if (srcString.match(/\.(mp4|webm|ogg|mov)$/i)) {
               return (
                 <figure className="my-8">
                   <video
-                    src={src}
+                    src={srcString}
                     title={title || alt || ""}
                     controls
                     className="w-full rounded-lg"
@@ -326,12 +379,12 @@ export function Mdx({ code }: MdxProps) {
             }
 
             // Handle SVG files
-            if (src.match(/\.svg$/i)) {
+            if (srcString.match(/\.svg$/i)) {
               return (
                 <figure className="my-8">
                   <div className="flex justify-center">
                     <img
-                      src={src}
+                      src={srcString}
                       alt={alt || ""}
                       title={title || alt || ""}
                       className="max-w-full h-auto"
@@ -350,7 +403,7 @@ export function Mdx({ code }: MdxProps) {
               <figure className="my-8">
                 <div className="relative aspect-video overflow-hidden rounded-lg border bg-muted">
                   <Image
-                    src={src}
+                    src={srcString}
                     alt={alt || ""}
                     title={title || alt || ""}
                     fill
@@ -390,57 +443,52 @@ export function Mdx({ code }: MdxProps) {
             const language = match ? match[1] : "";
             const isInline = !node?.parent || node.parent.tagName !== "pre";
 
-            // Handle inline code
-            if (isInline) {
+            // Handle mermaid diagrams
+            if (language === "mermaid") {
               return (
-                <code className={className} {...props}>
-                  {children}
-                </code>
+                <MermaidDiagram chart={String(children).replace(/\n$/, "")} />
               );
             }
 
-            // Handle code blocks with syntax highlighting
-            const codeString = String(children).replace(/\n$/, "");
-
-            // Extract title from meta string if present
-            const meta = node?.data?.meta || "";
-            const titleMatch = meta.match(/title="([^"]+)"/);
-            const title = titleMatch ? titleMatch[1] : null;
-
-            return (
-              <div className="code-block-wrapper">
-                {title && <div className="code-title">{title}</div>}
+            return !isInline && match ? (
+              <div className="relative">
                 <SyntaxHighlighter
                   style={vscDarkPlus}
-                  language={language || "text"}
+                  language={language}
                   PreTag="div"
-                  customStyle={{
-                    margin: 0,
-                    borderRadius: title ? "0 0 0.5rem 0.5rem" : "0.5rem",
-                    background: "#0f172a",
-                    border: "1px solid #374151",
-                    padding: "1rem",
-                  }}
+                  customStyle={
+                    {
+                      background: "#0f172a",
+                      border: "1px solid #374151",
+                      borderRadius: "0.5rem",
+                      margin: "1.5rem 0",
+                      fontSize: "0.875rem",
+                      fontFamily:
+                        '"JetBrains Mono", "Fira Code", Consolas, monospace',
+                    } as any
+                  }
                   codeTagProps={{
                     style: {
+                      background: "transparent",
                       fontFamily:
-                        "'JetBrains Mono', 'Fira Code', Consolas, monospace",
-                      fontSize: "0.875rem",
-                      lineHeight: "1.5",
-                    },
-                  }}
-                  showLineNumbers={codeString.split("\n").length > 5}
-                  lineNumberStyle={{
-                    color: "#6b7280",
-                    fontSize: "0.75rem",
-                    paddingRight: "1rem",
-                    userSelect: "none",
+                        '"JetBrains Mono", "Fira Code", Consolas, monospace',
+                    } as any,
                   }}
                   {...props}
                 >
-                  {codeString}
+                  {String(children).replace(/\n$/, "")}
                 </SyntaxHighlighter>
+                <div className="absolute top-2 right-2 text-xs text-white/50 bg-figma-dark/50 px-2 py-1 rounded">
+                  {language}
+                </div>
               </div>
+            ) : (
+              <code
+                className="bg-figma-purple/20 text-figma-orange px-1.5 py-0.5 rounded text-sm font-mono"
+                {...props}
+              >
+                {children}
+              </code>
             );
           },
           ul: ({ children, ...props }) => (

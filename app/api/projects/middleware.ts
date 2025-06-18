@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 // Check authentication for projects admin API operations
 export function checkProjectAdminAuth(req: NextRequest) {
   // Get the auth cookie
-  const authCookie = req.cookies.get('project-admin-auth');
+  const authCookie = req.cookies.get('project_admin_auth');
   
   // For GET requests, allow public access
   if (req.method === 'GET') {
@@ -11,7 +11,7 @@ export function checkProjectAdminAuth(req: NextRequest) {
   }
   
   // For all other methods (POST, PUT, DELETE), check authentication
-  if (!authCookie || authCookie.value !== 'authenticated') {
+  if (!authCookie || authCookie.value !== 'true') {
     return NextResponse.json(
       { error: 'Unauthorized access. Please login first.' },
       { status: 401 }

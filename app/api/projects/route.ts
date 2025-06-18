@@ -10,14 +10,6 @@ export async function GET(req: NextRequest) {
   const featured = searchParams.get('featured') === 'true';
   const isAdmin = searchParams.get('admin') === 'true';
 
-  // Check admin authentication for admin requests
-  if (isAdmin) {
-    const authCookie = req.cookies.get('project-admin-auth');
-    if (!authCookie || authCookie.value !== 'authenticated') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-  }
-
   // Create base query
   const where: any = {
     // Only filter for published if not in admin mode

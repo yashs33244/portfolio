@@ -54,7 +54,7 @@ export default function BuyMeCoffee() {
                 className="bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white font-semibold text-lg px-8 py-6 h-auto rounded-full transition-all duration-300 shadow-lg hover:shadow-xl"
               >
                 <Link
-                  href="https://www.buymeacoffee.com/tanishqsingh"
+                  href="https://www.buymeacoffee.com/yashs3324"
                   target="_blank"
                   rel="noopener noreferrer"
                 >

@@ -3,7 +3,15 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  ArrowRight,
+  Trophy,
+  TrendingUp,
+  Target,
+  Zap,
+  Calendar,
+} from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 interface CodeForcesUserInfo {
@@ -63,7 +71,7 @@ const mockUserInfo: CodeForcesUserInfo = {
   titlePhoto: "",
 };
 
-// Mock submissions data
+// Mock submissions data with enhanced statistics
 const mockSubmissions: CodeForcesSubmission[] = Array.from({ length: 50 }).map(
   (_, i) => ({
     id: 1000 + i,
@@ -158,7 +166,87 @@ function getRatingColor(rating: number): string {
   return "#aa0000"; // Red
 }
 
+function getRankColor(rank: string): string {
+  const rankColors: Record<string, string> = {
+    newbie: "#808080",
+    pupil: "#008000",
+    specialist: "#03a89e",
+    expert: "#0000ff",
+    "candidate master": "#a0a",
+    master: "#ff8c00",
+    "international master": "#ff6b35",
+    grandmaster: "#ff0000",
+    "international grandmaster": "#aa0000",
+    "legendary grandmaster": "#aa0000",
+  };
+  return rankColors[rank.toLowerCase()] || "#808080";
+}
+
+// Progress Bar Component
+const ProgressBar = ({
+  percentage,
+  color,
+  height = "8px",
+}: {
+  percentage: number;
+  color: string;
+  height?: string;
+}) => (
+  <div
+    className="w-full bg-figma-dark rounded-full overflow-hidden"
+    style={{ height }}
+  >
+    <div
+      className="h-full transition-all duration-1000 ease-out"
+      style={{
+        width: `${percentage}%`,
+        backgroundColor: color,
+      }}
+    />
+  </div>
+);
+
+// Rating Progress Component
+const RatingProgress = ({
+  current,
+  max,
+  rank,
+}: {
+  current: number;
+  max: number;
+  rank: string;
+}) => {
+  const percentage = max > 0 ? (current / max) * 100 : 0;
+  const color = getRatingColor(current);
+
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-between items-center">
+        <span className="text-white font-poppins text-sm">Rating Progress</span>
+        <span className="text-white/70 font-poppins text-sm">
+          {current}/{max}
+        </span>
+      </div>
+      <ProgressBar percentage={percentage} color={color} height="12px" />
+      <div className="flex justify-between items-center">
+        <span className="text-white/50 text-xs font-poppins capitalize">
+          {rank}
+        </span>
+        <span className="text-white/50 text-xs font-poppins">
+          {percentage.toFixed(1)}% to max
+        </span>
+      </div>
+    </div>
+  );
+};
+
 export default function CodeforcesStats() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const {
     data: userInfo,
     isLoading: isUserLoading,
@@ -185,253 +273,257 @@ export default function CodeforcesStats() {
 
   const isLoading = isUserLoading || isSubmissionsLoading;
 
-  // We'll never have an error now since we're using mock data as fallback
-  // But keeping error handling for robustness
   if (isLoading) {
     return (
-      <div className="border border-amber rounded-lg p-6 animate-pulse">
-        <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-        <div className="h-4 bg-gray-200 rounded w-1/2 mb-6"></div>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="h-24 bg-gray-200 rounded"></div>
-          <div className="h-24 bg-gray-200 rounded"></div>
-        </div>
+      <div className="space-y-6">
+        <Card className="bg-figma-menu border-white/10">
+          <CardContent className="p-6">
+            <div className="animate-pulse space-y-4">
+              <div className="h-8 bg-white/10 rounded w-48"></div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="h-16 bg-white/10 rounded"></div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
-  if (!userInfo || !submissions) {
-    return null;
-  }
+  const user = userInfo || mockUserInfo;
+  const userSubmissions = submissions || mockSubmissions;
 
-  // Calculate stats based on submissions
-  const submissionStats = (() => {
-    const verdictCounts: Record<string, number> = {};
-    const tagCounts: Record<string, number> = {};
-    const languageCounts: Record<string, number> = {};
-    const problemsSolved = new Set<string>();
+  // Calculate statistics
+  const solvedProblems = userSubmissions.filter(
+    (s) => s.verdict === "OK"
+  ).length;
+  const totalSubmissions = userSubmissions.length;
+  const successRate =
+    totalSubmissions > 0 ? (solvedProblems / totalSubmissions) * 100 : 0;
 
-    submissions.forEach((submission: CodeForcesSubmission) => {
-      // Count verdicts
-      const verdict = submission.verdict || "UNKNOWN";
-      verdictCounts[verdict] = (verdictCounts[verdict] || 0) + 1;
+  // Language distribution
+  const languageStats = userSubmissions.reduce((acc, submission) => {
+    const lang = submission.programmingLanguage;
+    acc[lang] = (acc[lang] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
 
-      // Count languages
-      const language = submission.programmingLanguage;
-      languageCounts[language] = (languageCounts[language] || 0) + 1;
-
-      // Count problem tags
-      if (submission.problem.tags) {
-        submission.problem.tags.forEach((tag: string) => {
-          tagCounts[tag] = (tagCounts[tag] || 0) + 1;
-        });
-      }
-
-      // Track unique solved problems
-      if (submission.verdict === "OK") {
-        const problemId = `${submission.problem.contestId}-${submission.problem.index}`;
-        problemsSolved.add(problemId);
-      }
-    });
-
-    // Calculate successful submission rate
-    const acceptedCount = verdictCounts["OK"] || 0;
-    const totalSubmissions = submissions.length;
-    const acceptanceRate =
-      totalSubmissions > 0
-        ? Math.round((acceptedCount / totalSubmissions) * 100)
-        : 0;
-
-    // Sort languages by usage
-    const topLanguages = Object.entries(languageCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 3)
-      .map(([name, count]) => ({
-        name,
-        count,
-        percentage: Math.round((count / totalSubmissions) * 100),
-      }));
-
-    // Sort tags by usage
-    const topTags = Object.entries(tagCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5)
-      .map(([name, count]) => ({
-        name,
-        count,
-        percentage: Math.round((count / totalSubmissions) * 100),
-      }));
-
-    return {
-      totalSubmissions,
-      acceptedCount,
-      acceptanceRate,
-      uniqueProblemsSolved: problemsSolved.size,
-      topLanguages,
-      topTags,
-    };
-  })();
+  const topLanguages = Object.entries(languageStats)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 5)
+    .map(([name, count]) => ({
+      name,
+      percentage: (count / totalSubmissions) * 100,
+      count,
+    }));
 
   return (
-    <section className="border border-amber rounded-lg overflow-hidden">
-      <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-bold text-orange">Codeforces Profile</h3>
-          <Button
-            variant="outline"
-            asChild
-            className="border-rose text-rose hover:bg-rose hover:text-white"
-          >
-            <Link
-              href={`https://codeforces.com/profile/${userInfo.handle}`}
-              target="_blank"
-              rel="noopener noreferrer"
+    <div className="space-y-6">
+      {/* Header */}
+      <Card className="bg-figma-menu border-white/10 overflow-hidden">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 bg-figma-gradient rounded-full flex items-center justify-center">
+                <Trophy className="w-8 h-8 text-black" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold text-white font-poppins">
+                  Codeforces Stats
+                </h3>
+                <p className="text-white/70 font-poppins">
+                  @{user.handle} • Competitive Programming
+                </p>
+              </div>
+            </div>
+            <Button
+              asChild
+              className="bg-figma-gradient hover:bg-figma-gradient/90 text-black"
             >
-              View Profile <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
-
-        {/* User Info */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-lg overflow-hidden bg-gray-100">
-              {userInfo.avatar && (
-                <img
-                  src={userInfo.avatar}
-                  alt={userInfo.handle}
-                  className="w-full h-full object-cover"
-                />
-              )}
-            </div>
-            <div>
-              <h4 className="font-semibold text-lg">{userInfo.handle}</h4>
-              <p
-                className="text-sm"
-                style={{ color: getRatingColor(userInfo.rating) }}
+              <Link
+                href={`https://codeforces.com/profile/${user.handle}`}
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                {userInfo.rank} ({userInfo.rating})
-              </p>
-              <p className="text-xs text-gray-500">
-                Max: {userInfo.maxRank} ({userInfo.maxRating})
-              </p>
-            </div>
+                View Profile
+                <ArrowRight className="ml-2 w-4 h-4" />
+              </Link>
+            </Button>
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-gray-50 rounded-lg p-3">
-              <p className="text-sm text-gray-600">Rating</p>
-              <p
-                className="text-2xl font-bold"
-                style={{ color: getRatingColor(userInfo.rating) }}
+          {/* Main Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="bg-figma-dark rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Target className="w-4 h-4 text-figma-purple" />
+                <span className="text-white/70 text-sm font-poppins">
+                  Current Rating
+                </span>
+              </div>
+              <div
+                className="text-2xl font-bold font-poppins"
+                style={{ color: getRatingColor(user.rating) }}
               >
-                {userInfo.rating}
-              </p>
-              <div className="w-full bg-gray-200 h-1.5 rounded-full mt-2">
+                {user.rating}
+              </div>
+              <div className="text-white/50 text-xs font-poppins capitalize">
+                {user.rank}
+              </div>
+            </div>
+
+            <div className="bg-figma-dark rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingUp className="w-4 h-4 text-figma-orange" />
+                <span className="text-white/70 text-sm font-poppins">
+                  Max Rating
+                </span>
+              </div>
+              <div
+                className="text-2xl font-bold font-poppins"
+                style={{ color: getRatingColor(user.maxRating) }}
+              >
+                {user.maxRating}
+              </div>
+              <div className="text-white/50 text-xs font-poppins capitalize">
+                {user.maxRank}
+              </div>
+            </div>
+
+            <div className="bg-figma-dark rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Zap className="w-4 h-4 text-figma-purple" />
+                <span className="text-white/70 text-sm font-poppins">
+                  Solved
+                </span>
+              </div>
+              <div className="text-2xl font-bold text-white font-poppins">
+                {solvedProblems}
+              </div>
+              <div className="text-white/50 text-xs font-poppins">
+                {successRate.toFixed(1)}% success
+              </div>
+            </div>
+
+            <div className="bg-figma-dark rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Calendar className="w-4 h-4 text-figma-orange" />
+                <span className="text-white/70 text-sm font-poppins">
+                  Contribution
+                </span>
+              </div>
+              <div className="text-2xl font-bold text-white font-poppins">
+                {user.contribution}
+              </div>
+              <div className="text-white/50 text-xs font-poppins">
+                {user.friendOfCount} friends
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Progress & Languages */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Rating Progress */}
+        <Card className="bg-figma-menu border-white/10">
+          <CardHeader>
+            <CardTitle className="text-white font-poppins flex items-center gap-2">
+              <Target className="w-5 h-5 text-figma-purple" />
+              Rating Progress
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <RatingProgress
+              current={user.rating}
+              max={user.maxRating}
+              rank={user.rank}
+            />
+
+            {/* Achievement Cards */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-figma-dark rounded-lg p-4 text-center">
                 <div
-                  className="h-full rounded-full"
-                  style={{
-                    width: `${Math.min(100, (userInfo.rating / 3000) * 100)}%`,
-                    backgroundColor: getRatingColor(userInfo.rating),
-                  }}
-                ></div>
-              </div>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-3">
-              <p className="text-sm text-gray-600">Contribution</p>
-              <p
-                className="text-2xl font-bold"
-                style={{
-                  color:
-                    userInfo.contribution > 0
-                      ? "green"
-                      : userInfo.contribution < 0
-                      ? "red"
-                      : "gray",
-                }}
-              >
-                {userInfo.contribution > 0
-                  ? `+${userInfo.contribution}`
-                  : userInfo.contribution}
-              </p>
-              <p className="text-xs text-gray-500 mt-2">
-                Registered:{" "}
-                {new Date(
-                  userInfo.registrationTimeSeconds * 1000
-                ).toLocaleDateString()}
-              </p>
-            </div>
-          </div>
-
-          {/* Submission Stats */}
-          {submissionStats && (
-            <>
-              <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="bg-gray-50 p-2 rounded-lg">
-                  <p className="text-xs text-gray-600">Submissions</p>
-                  <p className="font-bold">
-                    {submissionStats.totalSubmissions}
-                  </p>
+                  className="text-xl font-bold font-poppins mb-1"
+                  style={{ color: getRatingColor(user.maxRating) }}
+                >
+                  {user.maxRating}
                 </div>
-                <div className="bg-gray-50 p-2 rounded-lg">
-                  <p className="text-xs text-gray-600">Solved</p>
-                  <p className="font-bold">
-                    {submissionStats.uniqueProblemsSolved}
-                  </p>
-                </div>
-                <div className="bg-gray-50 p-2 rounded-lg">
-                  <p className="text-xs text-gray-600">Acceptance</p>
-                  <p className="font-bold">{submissionStats.acceptanceRate}%</p>
+                <div className="text-white/70 text-sm font-poppins">
+                  Best Rating
                 </div>
               </div>
-
-              {/* Top Languages */}
-              {submissionStats.topLanguages.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-semibold mb-2">Top Languages</h4>
-                  <div className="space-y-2">
-                    {submissionStats.topLanguages.map((lang, index) => (
-                      <div key={index}>
-                        <div className="flex justify-between text-xs mb-1">
-                          <span>{lang.name}</span>
-                          <span>{lang.percentage}%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-1.5">
-                          <div
-                            className="h-full rounded-full bg-blueviolet"
-                            style={{ width: `${lang.percentage}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+              <div className="bg-figma-dark rounded-lg p-4 text-center">
+                <div className="text-xl font-bold text-white font-poppins mb-1">
+                  {Math.floor(
+                    (Date.now() / 1000 - user.registrationTimeSeconds) /
+                      (365 * 24 * 3600)
+                  )}
+                  y
                 </div>
-              )}
+                <div className="text-white/70 text-sm font-poppins">
+                  On Platform
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-              {/* Top Tags */}
-              {submissionStats.topTags.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-semibold mb-2">
-                    Top Problem Tags
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {submissionStats.topTags.map((tag, index) => (
-                      <span
-                        key={index}
-                        className="px-2 py-1 bg-gray-100 rounded-full text-xs"
-                        title={`${tag.count} problems`}
-                      >
-                        {tag.name}
+        {/* Language Statistics */}
+        <Card className="bg-figma-menu border-white/10">
+          <CardHeader>
+            <CardTitle className="text-white font-poppins flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-figma-orange" />
+              Language Usage
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {topLanguages.map((lang, index) => {
+              const colors = [
+                "#7a87fb",
+                "#ffd49c",
+                "#34d399",
+                "#f87171",
+                "#a78bfa",
+              ];
+              const color = colors[index] || "#6b7280";
+
+              return (
+                <div key={lang.name} className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: color }}
+                      />
+                      <span className="text-white font-poppins">
+                        {lang.name}
                       </span>
-                    ))}
+                    </div>
+                    <div className="text-white/70 text-sm font-poppins">
+                      {lang.count} ({lang.percentage.toFixed(1)}%)
+                    </div>
                   </div>
+                  <ProgressBar percentage={lang.percentage} color={color} />
                 </div>
-              )}
-            </>
-          )}
-        </div>
+              );
+            })}
+
+            {/* Summary */}
+            <div className="mt-6 p-4 bg-figma-dark rounded-lg">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-white font-poppins">
+                  {totalSubmissions}
+                </div>
+                <div className="text-white/70 text-sm font-poppins">
+                  Total Submissions
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-    </section>
+    </div>
   );
 }

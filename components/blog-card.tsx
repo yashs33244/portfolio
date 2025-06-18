@@ -66,7 +66,7 @@ export function BlogCard({ post }: BlogCardProps) {
                 <Badge
                   key={category.id}
                   variant="outline"
-                  className="border-figma-gradient text-figma-gradient bg-figma-gradient/10 font-poppins text-xs"
+                  className="border-figma-purple/50 text-white bg-figma-purple/20 hover:bg-figma-purple/30 font-poppins"
                 >
                   {category.name}
                 </Badge>

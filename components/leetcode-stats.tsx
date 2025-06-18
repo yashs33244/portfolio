@@ -1,635 +1,426 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { CalendarDays, Target, Trophy, Zap, Flame, Code } from "lucide-react";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import CalendarHeatmap from "react-calendar-heatmap";
+import "react-calendar-heatmap/dist/styles.css";
 import { useQuery } from "@tanstack/react-query";
-import { LeetCodeStats, LeetCodeCalendarEntry } from "@/types/leetcode";
+import { leetcodeAPI } from "@/lib/platform-api";
+import { Skeleton } from "@/components/ui/skeleton";
 
-// Mock data as fallback
-const mockLeetCodeStats: LeetCodeStats = {
-  totalSolved: 501,
-  totalQuestions: 2500,
-  easySolved: 147,
-  totalEasy: 600,
-  mediumSolved: 285,
-  totalMedium: 1300,
-  hardSolved: 69,
-  totalHard: 600,
-  acceptanceRate: 63.5,
-  ranking: 136746,
-  contributionPoints: 250,
-  submissionCalendar: JSON.stringify(
-    // Generate mock submission calendar for last 100 days
-    Array.from({ length: 100 }).reduce((acc: Record<string, number>, _, i) => {
-      // Current date minus i days, converted to seconds
-      const date = Math.floor((Date.now() - i * 86400000) / 1000);
-      // Random submission count between 0 and 10
-      acc[date.toString()] = Math.floor(Math.random() * 10);
-      return acc;
-    }, {})
-  ),
-};
+// Progress Circle Component
+function ProgressCircle({
+  percentage,
+  color,
+  label,
+  count,
+}: {
+  percentage: number;
+  color: string;
+  label: string;
+  count: number;
+}) {
+  return (
+    <div className="text-center">
+      <div className="w-20 h-20 mx-auto mb-2">
+        <CircularProgressbar
+          value={percentage}
+          text={`${count}`}
+          styles={buildStyles({
+            pathColor: color,
+            textColor: "#ffffff",
+            trailColor: "rgba(255,255,255,0.1)",
+            textSize: "24px",
+          })}
+        />
+      </div>
+      <p className="text-sm text-white/70">{label}</p>
+    </div>
+  );
+}
 
-async function fetchLeetCodeStats(): Promise<LeetCodeStats> {
-  const submissionCalendarData = {
-    "1711929600": 3,
-    "1712016000": 1,
-    "1712102400": 8,
-    "1712188800": 9,
-    "1712275200": 1,
-    "1712361600": 1,
-    "1712448000": 8,
-    "1712534400": 8,
-    "1712620800": 1,
-    "1712707200": 12,
-    "1712793600": 7,
-    "1712880000": 1,
-    "1712966400": 8,
-    "1713052800": 4,
-    "1713139200": 3,
-    "1713225600": 19,
-    "1713312000": 1,
-    "1713398400": 11,
-    "1713484800": 6,
-    "1713571200": 4,
-    "1713657600": 8,
-    "1713744000": 1,
-    "1713830400": 4,
-    "1713916800": 1,
-    "1714003200": 2,
-    "1714089600": 2,
-    "1714176000": 6,
-    "1714262400": 3,
-    "1714348800": 2,
-    "1714435200": 1,
-    "1714521600": 2,
-    "1714608000": 2,
-    "1714694400": 1,
-    "1714780800": 1,
-    "1714867200": 2,
-    "1714953600": 1,
-    "1715040000": 1,
-    "1715126400": 1,
-    "1715299200": 2,
-    "1715385600": 1,
-    "1715472000": 1,
-    "1715558400": 15,
-    "1715644800": 5,
-    "1715731200": 2,
-    "1715817600": 4,
-    "1715904000": 4,
-    "1715990400": 6,
-    "1716076800": 4,
-    "1716163200": 11,
-    "1716249600": 1,
-    "1716336000": 2,
-    "1716422400": 2,
-    "1716508800": 5,
-    "1716595200": 3,
-    "1716681600": 1,
-    "1716768000": 4,
-    "1716854400": 5,
-    "1716940800": 2,
-    "1717027200": 8,
-    "1717113600": 2,
-    "1717200000": 1,
-    "1717286400": 3,
-    "1717372800": 1,
-    "1717459200": 5,
-    "1717545600": 5,
-    "1717632000": 5,
-    "1717718400": 11,
-    "1717804800": 3,
-    "1717891200": 2,
-    "1717977600": 4,
-    "1718064000": 2,
-    "1718150400": 10,
-    "1718236800": 1,
-    "1718323200": 2,
-    "1718409600": 1,
-    "1718496000": 14,
-    "1718582400": 4,
-    "1718668800": 1,
-    "1718755200": 2,
-    "1718841600": 6,
-    "1718928000": 1,
-    "1719014400": 1,
-    "1719100800": 7,
-    "1719187200": 1,
-    "1719273600": 1,
-    "1719360000": 3,
-    "1719446400": 3,
-    "1719532800": 3,
-    "1719619200": 1,
-    "1719705600": 2,
-    "1719792000": 4,
-    "1719878400": 2,
-    "1719964800": 1,
-    "1720051200": 1,
-    "1720137600": 1,
-    "1720224000": 2,
-    "1720310400": 2,
-    "1720396800": 3,
-    "1720483200": 1,
-    "1720569600": 1,
-    "1720656000": 2,
-    "1720742400": 8,
-    "1720828800": 1,
-    "1720915200": 1,
-    "1721001600": 2,
-    "1721088000": 1,
-    "1721174400": 1,
-    "1721260800": 9,
-    "1721347200": 12,
-    "1721433600": 1,
-    "1721520000": 2,
-    "1721606400": 1,
-    "1721692800": 1,
-    "1721779200": 1,
-    "1721865600": 13,
-    "1721952000": 2,
-    "1722038400": 1,
-    "1722124800": 8,
-    "1722211200": 3,
-    "1722297600": 14,
-    "1722384000": 1,
-    "1722470400": 12,
-    "1722556800": 1,
-    "1722643200": 2,
-    "1722729600": 14,
-    "1722816000": 1,
-    "1722902400": 1,
-    "1722988800": 5,
-    "1723075200": 1,
-    "1723161600": 4,
-    "1723248000": 2,
-    "1723334400": 4,
-    "1723420800": 4,
-    "1723507200": 3,
-    "1723593600": 3,
-    "1723680000": 4,
-    "1723766400": 4,
-    "1723852800": 1,
-    "1723939200": 5,
-    "1724025600": 6,
-    "1724112000": 4,
-    "1724198400": 2,
-    "1724284800": 5,
-    "1724371200": 1,
-    "1724457600": 1,
-    "1724544000": 1,
-    "1724630400": 2,
-    "1724716800": 1,
-    "1724803200": 2,
-    "1724889600": 2,
-    "1724976000": 2,
-    "1725062400": 8,
-    "1725148800": 6,
-    "1725235200": 3,
-    "1725321600": 1,
-    "1725408000": 3,
-    "1725494400": 3,
-    "1725580800": 1,
-    "1725667200": 1,
-    "1725753600": 2,
-    "1725840000": 2,
-    "1725926400": 5,
-    "1726012800": 8,
-    "1726099200": 1,
-    "1726185600": 1,
-    "1726272000": 3,
-    "1726358400": 1,
-    "1726444800": 8,
-    "1726531200": 5,
-    "1726617600": 2,
-    "1726704000": 8,
-    "1726790400": 8,
-    "1726876800": 5,
-    "1726963200": 2,
-    "1727049600": 4,
-    "1727136000": 11,
-    "1727222400": 7,
-    "1727308800": 3,
-    "1727395200": 3,
-    "1727481600": 2,
-    "1727654400": 6,
-    "1727740800": 5,
-    "1727827200": 5,
-    "1727913600": 13,
-    "1728000000": 5,
-    "1728172800": 3,
-    "1728259200": 4,
-    "1728345600": 2,
-    "1728432000": 2,
-    "1728518400": 1,
-    "1728604800": 2,
-    "1728691200": 5,
-    "1728777600": 1,
-    "1728864000": 1,
-    "1728950400": 1,
-    "1729123200": 1,
-    "1729296000": 1,
-    "1729382400": 6,
-    "1729468800": 1,
-    "1729728000": 1,
-    "1730073600": 4,
-    "1730160000": 1,
-    "1730246400": 2,
-    "1730419200": 4,
-    "1730505600": 1,
-    "1730592000": 4,
-    "1730764800": 1,
-    "1731369600": 17,
-    "1731456000": 1,
-    "1731542400": 2,
-    "1731888000": 5,
-    "1731974400": 10,
-    "1732406400": 4,
-    "1732579200": 1,
-    "1732665600": 2,
-    "1733529600": 3,
-    "1733616000": 2,
-    "1733788800": 9,
-    "1733875200": 1,
-    "1734134400": 1,
-    "1734220800": 3,
-    "1734307200": 1,
-    "1734393600": 1,
-    "1734480000": 11,
-    "1734652800": 8,
-    "1734739200": 2,
-    "1734912000": 1,
-    "1734998400": 7,
-    "1735084800": 4,
-    "1735171200": 1,
-    "1735344000": 5,
-    "1735516800": 10,
-    "1735603200": 4,
-    "1735689600": 5,
-    "1735862400": 2,
-    "1735948800": 6,
-    "1736035200": 7,
-    "1736208000": 3,
-    "1736985600": 4,
-    "1737158400": 11,
-    "1737763200": 3,
-    "1738368000": 7,
-    "1738627200": 1,
-    "1739577600": 3,
-    "1740096000": 23,
-    "1740182400": 6,
-    "1740355200": 3,
-    "1741046400": 6,
-    "1741737600": 3,
-    "1742428800": 4,
-    "1742515200": 10,
-    "1743033600": 2,
+// Difficulty Bar Component
+function DifficultyBar({
+  label,
+  count,
+  total,
+  color,
+}: {
+  label: string;
+  count: number;
+  total: number;
+  color: string;
+}) {
+  const percentage = total > 0 ? (count / total) * 100 : 0;
+
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-between items-center">
+        <span className="text-white font-medium">{label}</span>
+        <span className="text-white/70 text-sm">{count}</span>
+      </div>
+      <div className="w-full bg-white/10 rounded-full h-2">
+        <div
+          className="h-2 rounded-full transition-all duration-500"
+          style={{
+            width: `${percentage}%`,
+            backgroundColor: color,
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+// Submission Calendar Component
+function SubmissionCalendar({
+  calendarData,
+}: {
+  calendarData: { [date: string]: number };
+}) {
+  // Convert the calendar data to the format expected by react-calendar-heatmap
+  const values = Object.entries(calendarData).map(([timestamp, count]) => ({
+    date: new Date(parseInt(timestamp) * 1000),
+    count: count,
+  }));
+
+  // Get date range for the heatmap (last year)
+  const endDate = new Date();
+  const startDate = new Date();
+  startDate.setFullYear(startDate.getFullYear() - 1);
+
+  const getTitleForValue = (value: any) => {
+    if (!value || !value.date) {
+      return "";
+    }
+    const submissions = value.count || 0;
+    return `${value.date.toDateString()}: ${submissions} submission${
+      submissions !== 1 ? "s" : ""
+    }`;
   };
 
-  try {
-    const response = await fetch(
-      "https://leetcode-stats-api.herokuapp.com/yashs33244"
-    );
-
-    if (!response.ok) {
-      console.warn("Failed to fetch LeetCode stats, using mock data");
-      return {
-        ...mockLeetCodeStats,
-        submissionCalendar: JSON.stringify(submissionCalendarData),
-      };
+  const getClassForValue = (value: any) => {
+    if (!value || value.count === 0) {
+      return "color-empty";
     }
-
-    const data = await response.json();
-
-    // Check if we received valid data with expected fields
-    if (!data.totalSolved || !data.totalQuestions) {
-      console.warn(
-        "Invalid LeetCode API response, using mock data with real calendar"
-      );
-      return {
-        ...mockLeetCodeStats,
-        submissionCalendar: JSON.stringify(submissionCalendarData),
-      };
+    if (value.count < 3) {
+      return "color-scale-1";
     }
-
-    // Use directly provided submission calendar or parse if it's a string
-    let submissionCalendar = data.submissionCalendar;
-    if (typeof submissionCalendar === "string") {
-      // It's already a string, use as is
-      submissionCalendar = data.submissionCalendar;
-    } else if (submissionCalendar) {
-      // It's an object, stringify it
-      submissionCalendar = JSON.stringify(data.submissionCalendar);
-    } else {
-      // No submission calendar data, use our provided data
-      submissionCalendar = JSON.stringify(submissionCalendarData);
+    if (value.count < 6) {
+      return "color-scale-2";
     }
+    if (value.count < 10) {
+      return "color-scale-3";
+    }
+    return "color-scale-4";
+  };
 
-    return {
-      ...data,
-      submissionCalendar: submissionCalendar,
-    } as LeetCodeStats;
-  } catch (error) {
-    console.error("Error fetching LeetCode stats:", error);
-    return {
-      ...mockLeetCodeStats,
-      submissionCalendar: JSON.stringify(submissionCalendarData),
-    };
-  }
+  return (
+    <div className="bg-figma-dark rounded-lg p-4">
+      <h4 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+        <CalendarDays className="w-5 h-5 text-figma-purple" />
+        Submission Activity
+      </h4>
+      <div className="submission-heatmap">
+        <CalendarHeatmap
+          startDate={startDate}
+          endDate={endDate}
+          values={values}
+          classForValue={getClassForValue}
+          titleForValue={getTitleForValue}
+        />
+      </div>
+      <style jsx>{`
+        .submission-heatmap :global(.react-calendar-heatmap) {
+          font-size: 10px;
+        }
+        .submission-heatmap :global(.react-calendar-heatmap .color-empty) {
+          fill: rgba(255, 255, 255, 0.1);
+        }
+        .submission-heatmap :global(.react-calendar-heatmap .color-scale-1) {
+          fill: #7a87fb;
+          opacity: 0.3;
+        }
+        .submission-heatmap :global(.react-calendar-heatmap .color-scale-2) {
+          fill: #7a87fb;
+          opacity: 0.5;
+        }
+        .submission-heatmap :global(.react-calendar-heatmap .color-scale-3) {
+          fill: #7a87fb;
+          opacity: 0.7;
+        }
+        .submission-heatmap :global(.react-calendar-heatmap .color-scale-4) {
+          fill: #7a87fb;
+          opacity: 1;
+        }
+        .submission-heatmap :global(.react-calendar-heatmap text) {
+          fill: rgba(255, 255, 255, 0.6);
+          font-size: 10px;
+        }
+      `}</style>
+    </div>
+  );
 }
 
 export default function LeetcodeStats() {
-  const {
-    data: stats,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["leetcodeStats"],
-    queryFn: fetchLeetCodeStats,
-    staleTime: 3600000, // 1 hour
-    retry: 1, // Only retry once
-    retryDelay: 1000, // Wait 1 second before retrying
+  const { data: leetcodeUser, isLoading: userLoading } = useQuery({
+    queryKey: ["leetcode-user"],
+    queryFn: () => leetcodeAPI.getUser(),
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  if (isLoading) {
+  const { data: submissionCalendar, isLoading: calendarLoading } = useQuery({
+    queryKey: ["leetcode-calendar"],
+    queryFn: () => leetcodeAPI.getSubmissionCalendar(),
+    staleTime: 1000 * 60 * 10, // 10 minutes
+  });
+
+  if (userLoading) {
     return (
-      <section className="border border-amber rounded-lg p-6 animate-pulse">
-        <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-        <div className="h-4 bg-gray-200 rounded w-1/2 mb-6"></div>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="h-24 bg-gray-200 rounded"></div>
-          <div className="h-24 bg-gray-200 rounded"></div>
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[...Array(3)].map((_, i) => (
+            <Skeleton key={i} className="h-32 bg-white/10" />
+          ))}
         </div>
-      </section>
+        <Skeleton className="h-64 bg-white/10" />
+      </div>
     );
   }
 
-  if (!stats) {
-    return null;
+  if (!leetcodeUser) {
+    return (
+      <div className="text-center py-8">
+        <div className="w-16 h-16 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Code className="w-8 h-8 text-orange-500" />
+        </div>
+        <h3 className="text-xl font-semibold text-white mb-2">
+          LeetCode Data Unavailable
+        </h3>
+        <p className="text-white/60">
+          Unable to fetch LeetCode statistics. Please check the connection or
+          try again later.
+        </p>
+      </div>
+    );
   }
 
-  // Convert submission calendar to a format we can display
-  // LeetCode stores timestamps in seconds since epoch
-  const calendarEntries: LeetCodeCalendarEntry[] = stats.submissionCalendar
-    ? Object.entries(stats.submissionCalendar)
-        .map(([timestamp, count]) => ({
-          date: new Date(parseInt(timestamp) * 1000).toISOString(),
-          count: Number(count),
-        }))
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-        .slice(-70) // Last 70 days
-    : [];
+  // Calculate difficulty breakdown
+  const easyCount =
+    leetcodeUser.acSubmissionNum.find((stat) => stat.difficulty === "Easy")
+      ?.count || 0;
+  const mediumCount =
+    leetcodeUser.acSubmissionNum.find((stat) => stat.difficulty === "Medium")
+      ?.count || 0;
+  const hardCount =
+    leetcodeUser.acSubmissionNum.find((stat) => stat.difficulty === "Hard")
+      ?.count || 0;
 
-  // Get the max count for scaling the heatmap
-  const maxCount =
-    calendarEntries.length > 0
-      ? Math.max(...calendarEntries.map((entry) => entry.count))
-      : 0;
+  // Calculate percentages for progress circles
+  const totalProblems = 3000; // Approximate total LeetCode problems
+  const easyTotal = 1500;
+  const mediumTotal = 1200;
+  const hardTotal = 600;
+
+  const easyPercentage = (easyCount / easyTotal) * 100;
+  const mediumPercentage = (mediumCount / mediumTotal) * 100;
+  const hardPercentage = (hardCount / hardTotal) * 100;
 
   return (
-    <section className="border border-amber rounded-lg overflow-hidden">
-      <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-bold text-orange">LeetCode Profile</h3>
-          <Button
-            variant="outline"
-            asChild
-            className="border-rose text-rose hover:bg-rose hover:text-white"
-          >
-            <Link
-              href="https://leetcode.com/u/yashs33244/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              View Profile <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
+    <div className="space-y-8">
+      {/* Overview Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="bg-figma-dark border border-white/10 rounded-lg p-6 text-center hover:border-orange-500/30 transition-all duration-300">
+          <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Trophy className="w-6 h-6 text-white" />
+          </div>
+          <div className="text-2xl font-bold text-white mb-1">
+            {leetcodeUser.totalSolved}
+          </div>
+          <div className="text-white/70 text-sm">Problems Solved</div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div>
-            <h4 className="text-lg font-semibold mb-4">Problem Solving</h4>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-2">
-                  <CircularProgressbar
-                    value={(stats.totalSolved / stats.totalQuestions) * 100}
-                    text={`${stats.totalSolved}`}
-                    styles={buildStyles({
-                      pathColor: "#3a86ff",
-                      textColor: "#3a86ff",
-                      trailColor: "#e6e6e6",
-                      textSize: "28px",
-                    })}
-                  />
-                </div>
-                <p className="text-gray-600 text-xs">Total</p>
-                <p className="text-gray-800 text-xs">
-                  {stats.totalQuestions} problems
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-2">
-                  <CircularProgressbar
-                    value={(stats.easySolved / stats.totalEasy) * 100}
-                    text={`${stats.easySolved}`}
-                    styles={buildStyles({
-                      pathColor: "#ffbe0b",
-                      textColor: "#ffbe0b",
-                      trailColor: "#e6e6e6",
-                      textSize: "28px",
-                    })}
-                  />
-                </div>
-                <p className="text-gray-600 text-xs">Easy</p>
-                <p className="text-gray-800 text-xs">
-                  {stats.totalEasy} problems
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-2">
-                  <CircularProgressbar
-                    value={(stats.mediumSolved / stats.totalMedium) * 100}
-                    text={`${stats.mediumSolved}`}
-                    styles={buildStyles({
-                      pathColor: "#ff6b35",
-                      textColor: "#ff6b35",
-                      trailColor: "#e6e6e6",
-                      textSize: "28px",
-                    })}
-                  />
-                </div>
-                <p className="text-gray-600 text-xs">Medium</p>
-                <p className="text-gray-800 text-xs">
-                  {stats.totalMedium} problems
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-2">
-                  <CircularProgressbar
-                    value={(stats.hardSolved / stats.totalHard) * 100}
-                    text={`${stats.hardSolved}`}
-                    styles={buildStyles({
-                      pathColor: "#f72585",
-                      textColor: "#f72585",
-                      trailColor: "#e6e6e6",
-                      textSize: "28px",
-                    })}
-                  />
-                </div>
-                <p className="text-gray-600 text-xs">Hard</p>
-                <p className="text-gray-800 text-xs">
-                  {stats.totalHard} problems
-                </p>
-              </div>
-            </div>
+        <div className="bg-figma-dark border border-white/10 rounded-lg p-6 text-center hover:border-green-500/30 transition-all duration-300">
+          <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Target className="w-6 h-6 text-white" />
+          </div>
+          <div className="text-2xl font-bold text-white mb-1">
+            {leetcodeUser.ranking
+              ? `#${leetcodeUser.ranking.toLocaleString()}`
+              : "N/A"}
+          </div>
+          <div className="text-white/70 text-sm">Global Ranking</div>
+        </div>
 
-            <div className="space-y-3">
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>Total Progress</span>
-                  <span>
-                    {Math.round(
-                      (stats.totalSolved / stats.totalQuestions) * 100
-                    )}
-                    %
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="h-full rounded-full bg-azure"
-                    style={{
-                      width: `${
-                        (stats.totalSolved / stats.totalQuestions) * 100
-                      }%`,
-                    }}
-                  ></div>
-                </div>
-              </div>
+        <div className="bg-figma-dark border border-white/10 rounded-lg p-6 text-center hover:border-blue-500/30 transition-all duration-300">
+          <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Zap className="w-6 h-6 text-white" />
+          </div>
+          <div className="text-2xl font-bold text-white mb-1">
+            {(
+              (leetcodeUser.acceptedCount / leetcodeUser.submissionCount) *
+              100
+            ).toFixed(1)}
+            %
+          </div>
+          <div className="text-white/70 text-sm">Acceptance Rate</div>
+        </div>
 
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>Acceptance Rate</span>
-                  <span>{stats.acceptanceRate}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="h-full rounded-full bg-amber"
-                    style={{ width: `${stats.acceptanceRate}%` }}
-                  ></div>
-                </div>
-              </div>
-            </div>
+        <div className="bg-figma-dark border border-white/10 rounded-lg p-6 text-center hover:border-red-500/30 transition-all duration-300">
+          <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Flame className="w-6 h-6 text-white" />
+          </div>
+          <div className="text-2xl font-bold text-white mb-1">
+            {leetcodeUser.streak}
+          </div>
+          <div className="text-white/70 text-sm">Day Streak</div>
+        </div>
+      </div>
+
+      {/* Detailed Statistics */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Problem Difficulty Breakdown */}
+        <div className="bg-figma-dark border border-white/10 rounded-lg p-6">
+          <h4 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
+            <Trophy className="w-5 h-5 text-figma-purple" />
+            Problem Difficulty Progress
+          </h4>
+
+          <div className="grid grid-cols-3 gap-6 mb-6">
+            <ProgressCircle
+              percentage={easyPercentage}
+              color="#10B981"
+              label="Easy"
+              count={easyCount}
+            />
+            <ProgressCircle
+              percentage={mediumPercentage}
+              color="#F59E0B"
+              label="Medium"
+              count={mediumCount}
+            />
+            <ProgressCircle
+              percentage={hardPercentage}
+              color="#EF4444"
+              label="Hard"
+              count={hardCount}
+            />
           </div>
 
-          <div>
-            <h4 className="text-lg font-semibold mb-4">
-              Ranking & Performance
-            </h4>
-            <div className="space-y-4">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <p className="text-sm text-gray-600">Global Ranking</p>
-                <p className="text-2xl font-bold">
-                  #{stats.ranking.toLocaleString()}
-                </p>
-                <span className="text-xs px-2 py-1 bg-blueviolet text-white rounded-full">
-                  Top {Math.ceil((stats.ranking / 5000000) * 100)}%
-                </span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-gray-50 p-3 rounded-lg">
-                  <p className="text-sm text-gray-600">Solved Problems</p>
-                  <p className="text-2xl font-bold text-orange">
-                    {stats.totalSolved}
-                  </p>
-                </div>
-                {stats.contributionPoints && (
-                  <div className="bg-gray-50 p-3 rounded-lg">
-                    <p className="text-sm text-gray-600">Contribution Points</p>
-                    <p className="text-2xl font-bold text-azure">
-                      {stats.contributionPoints}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
+          <div className="space-y-4">
+            <DifficultyBar
+              label="Easy Problems"
+              count={easyCount}
+              total={easyTotal}
+              color="#10B981"
+            />
+            <DifficultyBar
+              label="Medium Problems"
+              count={mediumCount}
+              total={mediumTotal}
+              color="#F59E0B"
+            />
+            <DifficultyBar
+              label="Hard Problems"
+              count={hardCount}
+              total={hardTotal}
+              color="#EF4444"
+            />
           </div>
         </div>
 
-        {/* Submission Calendar Heatmap */}
-        {calendarEntries.length > 0 && (
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <h4 className="text-lg font-semibold mb-4">Submission Activity</h4>
-            <div className="p-4 bg-gray-50 rounded-lg overflow-auto">
-              <div className="flex flex-wrap gap-1">
-                {calendarEntries.map((entry, index) => {
-                  // Calculate intensity based on submission count
-                  const intensity =
-                    maxCount > 0
-                      ? Math.min(Math.floor((entry.count / maxCount) * 5), 4)
-                      : 0;
+        {/* Statistics Summary */}
+        <div className="bg-figma-dark border border-white/10 rounded-lg p-6">
+          <h4 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
+            <Target className="w-5 h-5 text-figma-purple" />
+            Performance Metrics
+          </h4>
 
-                  // Map intensity to color classes that match our color scheme
-                  let bgColor;
-                  switch (intensity) {
-                    case 0:
-                      bgColor =
-                        entry.count === 0 ? "bg-gray-100" : "bg-azure-100";
-                      break;
-                    case 1:
-                      bgColor = "bg-azure-200";
-                      break;
-                    case 2:
-                      bgColor = "bg-azure-400";
-                      break;
-                    case 3:
-                      bgColor = "bg-azure-600";
-                      break;
-                    case 4:
-                      bgColor = "bg-azure-800";
-                      break;
-                    default:
-                      bgColor = "bg-gray-100";
-                  }
-
-                  const date = new Date(entry.date);
-                  const dateStr = date.toLocaleDateString();
-
-                  return (
-                    <div
-                      key={index}
-                      className={`w-4 h-4 rounded-sm ${bgColor} hover:ring-1 hover:ring-gray-400 transition-all`}
-                      title={`${dateStr}: ${entry.count} submissions`}
-                    >
-                      {/* Tooltip could be added with a more advanced library if needed */}
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="flex justify-between items-center mt-4">
-                <div className="text-xs text-gray-500">
-                  Submission activity in the last 70 days
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className="text-xs text-gray-500">Less</span>
-                  <div className="w-3 h-3 bg-gray-100 rounded-sm"></div>
-                  <div className="w-3 h-3 bg-azure-200 rounded-sm"></div>
-                  <div className="w-3 h-3 bg-azure-400 rounded-sm"></div>
-                  <div className="w-3 h-3 bg-azure-600 rounded-sm"></div>
-                  <div className="w-3 h-3 bg-azure-800 rounded-sm"></div>
-                  <span className="text-xs text-gray-500">More</span>
-                </div>
-              </div>
+          <div className="space-y-6">
+            <div className="flex justify-between items-center p-4 bg-figma-menu rounded-lg border border-white/10">
+              <span className="text-white font-medium">Total Submissions</span>
+              <Badge
+                variant="secondary"
+                className="bg-figma-purple/20 text-figma-purple"
+              >
+                {leetcodeUser.submissionCount.toLocaleString()}
+              </Badge>
             </div>
+
+            <div className="flex justify-between items-center p-4 bg-figma-menu rounded-lg border border-white/10">
+              <span className="text-white font-medium">Accepted Solutions</span>
+              <Badge
+                variant="secondary"
+                className="bg-green-500/20 text-green-400"
+              >
+                {leetcodeUser.acceptedCount.toLocaleString()}
+              </Badge>
+            </div>
+
+            <div className="flex justify-between items-center p-4 bg-figma-menu rounded-lg border border-white/10">
+              <span className="text-white font-medium">Success Rate</span>
+              <Badge
+                variant="secondary"
+                className="bg-blue-500/20 text-blue-400"
+              >
+                {(
+                  (leetcodeUser.acceptedCount / leetcodeUser.submissionCount) *
+                  100
+                ).toFixed(1)}
+                %
+              </Badge>
+            </div>
+
+            <div className="flex justify-between items-center p-4 bg-figma-menu rounded-lg border border-white/10">
+              <span className="text-white font-medium">Current Streak</span>
+              <Badge
+                variant="secondary"
+                className="bg-orange-500/20 text-orange-400"
+              >
+                {leetcodeUser.streak} days
+              </Badge>
+            </div>
+
+            {leetcodeUser.realName && (
+              <div className="flex justify-between items-center p-4 bg-figma-menu rounded-lg border border-white/10">
+                <span className="text-white font-medium">Real Name</span>
+                <span className="text-white/70">{leetcodeUser.realName}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Submission Calendar */}
+      {!calendarLoading &&
+        submissionCalendar &&
+        Object.keys(submissionCalendar).length > 0 && (
+          <SubmissionCalendar calendarData={submissionCalendar} />
+        )}
+
+      {/* Loading state for calendar */}
+      {calendarLoading && (
+        <div className="bg-figma-dark rounded-lg p-4">
+          <Skeleton className="h-6 w-48 mb-4 bg-white/10" />
+          <Skeleton className="h-32 w-full bg-white/10" />
+        </div>
+      )}
+
+      {/* No calendar data */}
+      {!calendarLoading &&
+        (!submissionCalendar ||
+          Object.keys(submissionCalendar).length === 0) && (
+          <div className="bg-figma-dark rounded-lg p-6 text-center">
+            <CalendarDays className="w-12 h-12 text-white/40 mx-auto mb-4" />
+            <p className="text-white/60">
+              Submission calendar data is not available
+            </p>
           </div>
         )}
-      </div>
-    </section>
+    </div>
   );
 }

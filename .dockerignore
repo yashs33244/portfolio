@@ -42,4 +42,44 @@ README.md
 # Docker
 Dockerfile
 docker-compose.yml
-.dockerignore 
+.dockerignore
+
+# local env files
+.env*.local
+.env.example
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# development files
+.git
+.gitignore
+README.md
+.vscode
+.idea
+
+# testing
+coverage
+.nyc_output
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local development
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# build cache
+.cache 
